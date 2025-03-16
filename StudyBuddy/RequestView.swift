@@ -25,15 +25,10 @@ struct RequestView: View {
                                     .font(.system(size: 40))
                                     .foregroundColor(.gray)
                                 
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text("Poy Napapach")
-                                        .font(.headline)
-                                        .foregroundColor(.black)
-                                    
-                                    Text("Engineering")
-                                        .font(.subheadline)
-                                        .foregroundColor(.black.opacity(0.5))
-                                }
+                                ProfileDetailView(
+                                    name: "Amy Worawalan",
+                                    description: "Engineering, Software and Knowledge Engineering"
+                                )
                                 
                                 Spacer()
                                 
@@ -56,9 +51,9 @@ struct RequestView: View {
                             
                             // Tags Section
                             FlowLayout(spacing: 8) {
-                                TagView(text: "Software Design")
-                                TagView(text: "Mobile Dev")
-                                TagView(text: "UI/UX")
+                                CourseTagView(text: "Software Design")
+                                CourseTagView(text: "Mobile Dev")
+                                CourseTagView(text: "UI/UX")
                             }
                             .padding(.horizontal, 16)
                             .padding(.bottom, 16)
@@ -79,73 +74,6 @@ struct RequestView: View {
     }
 }
 
-// Reusable Tag Component
-struct TagView: View {
-    let text: String
-    
-    var body: some View {
-        Text(text)
-            .font(.footnote)
-            .foregroundColor(Color(red: 0.23, green: 0.39, blue: 0.93))
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(Color(red: 0.23, green: 0.39, blue: 0.93).opacity(0.1))
-            .cornerRadius(10)
-    }
-}
-
-// Custom Flow Layout that wraps to next line when needed
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-    
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) -> CGSize {
-        let maxWidth = proposal.width ?? .infinity
-        var height: CGFloat = 0
-        var width: CGFloat = 0
-        var currentX: CGFloat = 0
-        var currentY: CGFloat = 0
-        var rowHeight: CGFloat = 0
-        
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-
-            if currentX + size.width > maxWidth && currentX > 0 {
-                currentX = 0
-                currentY += rowHeight + spacing
-                rowHeight = 0
-            }
-
-            rowHeight = max(rowHeight, size.height)
-            currentX += size.width + spacing
-            width = max(width, currentX - spacing)
-
-            height = currentY + rowHeight
-        }
-        
-        return CGSize(width: width, height: height)
-    }
-    
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) {
-        let maxWidth = bounds.width
-        var currentX: CGFloat = bounds.minX
-        var currentY: CGFloat = bounds.minY
-        var rowHeight: CGFloat = 0
-        
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-
-            if currentX + size.width > bounds.maxX && currentX > bounds.minX {
-                currentX = bounds.minX
-                currentY += rowHeight + spacing
-                rowHeight = 0
-            }
-            
-            subview.place(at: CGPoint(x: currentX, y: currentY), proposal: ProposedViewSize(size))
-            rowHeight = max(rowHeight, size.height)
-            currentX += size.width + spacing
-        }
-    }
-}
 
 #Preview {
     RequestView()
