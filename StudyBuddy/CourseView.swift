@@ -32,10 +32,11 @@ struct CourseView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text("    Seclect Your Courses")
+            Text("Seclect Your Courses")
                 .font(.title2).bold()
                 .foregroundColor(.black)
                 .padding(.top, 35)
+                .padding(.horizontal, 17)
             // Search Bar
             SearchBarView(searchText: $searchText, placeholder: "Search Courses")
             

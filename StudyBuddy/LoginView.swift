@@ -14,6 +14,7 @@ struct LoginView: View {
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var navigateToCourseView = false  // State to control navigation
+    @State var showAlert : Bool = false  // if the user do not put any input
     
     var isFormComplete: Bool {
         return !firstName.isEmpty && !surname.isEmpty && !email.isEmpty && !password.isEmpty
@@ -24,10 +25,11 @@ struct LoginView: View {
             VStack(alignment: .leading, spacing: 15) {
                 //            Spacer()
                 
-                Text("    Create Account")
+                Text("Create Account")
                     .font(.title).bold()
                     .foregroundColor(.black)
                     .padding(.top, 80)
+                    .padding(.horizontal, 20)
                 
                 // Input Fields
                 VStack(spacing: 16) {
@@ -75,11 +77,13 @@ struct LoginView: View {
                         .padding(.horizontal, 20)
                 }
                 
-                // Create Account Button
+                // Account Button
                 Button(action: {
                     if isFormComplete {
-                                            navigateToCourseView = true  // Trigger navigation
-                                        }
+                        navigateToCourseView = true  // Trigger navigation
+                    } else {
+                        showAlert = true  // Show alert if form is incomplete
+                    }
                 }) {
                     Text("Create Account")
                         .bold()
@@ -91,15 +95,20 @@ struct LoginView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 10)
                 }
-                .disabled(!isFormComplete) // Disable button if form is incomplete
-                                
-                                // NavigationLink to CourseView
-                                NavigationLink(destination: CourseView(), isActive: $navigateToCourseView) {
-                                    EmptyView()
-                                }
+                .alert(isPresented: $showAlert) {
+                    Alert(
+                       title: Text("StudyBuddy"),
+                       message: Text("Please check your input"),
+                       dismissButton: .default(Text("Close"))
+                   )
+               }
+                // NavigationLink to CourseView
+                .navigationDestination(isPresented: $navigateToCourseView) {
+                    CourseView()
+                    EmptyView()
+                }
                 
-                
-                // OR Divider
+                // or
                 HStack {
                     Rectangle()
                         .frame(height: 1)
