@@ -38,7 +38,7 @@ const FriendRequestsScreen: React.FC<FriendRequestsScreenProps> = ({
       <ThemedView style={styles.headerSection}>
         <ThemedView style={styles.headerContainer}>
           <ThemedView style={styles.headerTextContainer}>
-            <ThemedText type="title">Friend requests</ThemedText>
+            <ThemedText type="title">Friend Requests</ThemedText>
           </ThemedView>
         </ThemedView>
       </ThemedView>
