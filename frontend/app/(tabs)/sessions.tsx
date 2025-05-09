@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Sessions } from '@/components/session/Sessions';
+import { Sessions } from '@/components/session';
 import type { Session } from '@/components/session/types';
 
 const HomeScreen = () => {

@@ -19,7 +19,7 @@ export const SectionHeader: React.FC<HeaderProps> = ({
     </View>
     {showArrow && (
       <TouchableOpacity onPress={onPress} style={styles.arrowIcon}>
-        <MaterialIcons name="arrow-forward" size={24} color="#666" />
+        <MaterialIcons name="arrow-forward" size={24} color="#3A63ED" />
       </TouchableOpacity>
     )}
   </ThemedView>
