@@ -7,6 +7,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { Background } from '@react-navigation/elements';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -20,7 +21,7 @@ export default function TabLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
+            backgroundColor: Colors[colorScheme ?? 'light'].background,
             position: 'absolute',
           },
           default: {},
@@ -52,6 +53,13 @@ export default function TabLayout() {
         options={{
           title: 'Request',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.crop.circle.badge.plus" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profileEdit"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
         }}
       />
     </Tabs>
