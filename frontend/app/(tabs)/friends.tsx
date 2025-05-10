@@ -4,37 +4,43 @@ import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import SearchBarWithSubjects from '@/components/SearchBarWithSubjects';
 import FriendBox from '@/components/friends/FriendBox';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 
 const FriendsPage = () => {
-  const navigation = useNavigation();
+  const router = useRouter();
   const [searchText, setSearchText] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   
-  // Sample data for existing friends
   const [friends] = useState([
     {
       id: '1',
-      name: 'John Doe',
-      description: 'Computer Science, Year 2',
+      name: 'Amy Worawalan',
+      description: 'Engineering, Software and Knowledge Engineering',
       avatarUrl: 'https://placehold.co/40x40',
-      tags: ['Programming', 'Algorithms', 'Web Dev']
+      tags: ['Mathematics', 'Software Design', 'Mobile Dev']
     },
     {
       id: '2',
-      name: 'Jane Smith',
-      description: 'Electrical Engineering, Year 3',
+      name: 'Nat Peanut',
+      description: 'Engineering, Aerospace Engineering',
       avatarUrl: 'https://placehold.co/40x40',
-      tags: ['Circuits', 'Mathematics']
+      tags: ['Mathematics']
     },
     {
       id: '3',
-      name: 'Alex Johnson',
-      description: 'Data Science, Year 1',
+      name: 'Tonnam Napasorn',
+      description: 'Engineering, Computer Science and Engineering',
       avatarUrl: 'https://placehold.co/40x40',
-      tags: ['Statistics', 'Machine Learning']
+      tags: ['Mathematics', 'Mobile Dev']
     }
   ]);
+
+  const handleViewProfile = (friendId: string) => {
+    router.push({
+      pathname: '/Profile',
+      params: { userId: friendId }
+    });
+  };
 
   const handleSearchChange = (text: string) => {
     setSearchText(text);
@@ -74,9 +80,10 @@ const FriendsPage = () => {
       <ScrollView style={styles.friendsList}>
         {filteredFriends.length > 0 ? (
           filteredFriends.map((friend) => (
-            <FriendBox 
-            friend={friend} 
-            onViewProfile={() => navigation.navigate('Profile', { userId: friend.id })}
+            <FriendBox
+              key={friend.id}
+              friend={friend}
+              onViewProfile={() => handleViewProfile(friend.id)}
             />
           ))
         ) : (
