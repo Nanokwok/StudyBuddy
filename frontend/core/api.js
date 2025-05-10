@@ -22,4 +22,17 @@ api.interceptors.request.use(
   }
 );
 
+// Response interceptor
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      // Handle token refresh or logout
+      await AsyncStorage.removeItem('accessToken');
+      // Redirect to login
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;
