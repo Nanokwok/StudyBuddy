@@ -37,7 +37,7 @@ export default function SignupScreen() {
   };
 
   const goToLogin = () => {
-    // router.push('/login');
+    router.push('/(auth)/login');
   };
 
   return (

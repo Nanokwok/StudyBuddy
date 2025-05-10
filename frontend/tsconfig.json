@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-, "components/CourseTag.js"  ]
+, "components/CourseTag.js", "core/api.js"  ]
 }

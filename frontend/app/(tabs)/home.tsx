@@ -3,6 +3,7 @@ import { View, ActivityIndicator, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Sessions } from '@/components/session';
 import type { Session } from '@/components/session/types';
+import { ProtectedRoute } from '../../components/ProtectedRoute';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -84,13 +85,15 @@ const HomeScreen = () => {
   }
 
   return (
-    <Sessions 
-      sessions={sessions}
-      loading={loading}
-      error={error}
-      // onSeeAllPress={() => navigation.navigate('AllSessions')}
-      // onMorePress={() => navigation.navigate('Friends')}
-    />
+    <ProtectedRoute>
+      <Sessions 
+        sessions={sessions}
+        loading={loading}
+        error={error}
+        // onSeeAllPress={() => navigation.navigate('AllSessions')}
+        // onMorePress={() => navigation.navigate('Friends')}
+      />
+    </ProtectedRoute>
   );
 };
 
