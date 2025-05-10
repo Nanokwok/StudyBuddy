@@ -2,6 +2,16 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.utils.translation import gettext_lazy as _
 
+def upload_thumbnail(instance, filename):
+    """
+    Function to define the upload path for user profile pictures
+    """
+    path = f'profile_pictures/{instance.username}'
+    extension = filename.split('.')[-1]
+    if extension:
+        path = path + '.' + extension
+    return path
+
 
 class User(AbstractUser):
     """
@@ -10,6 +20,7 @@ class User(AbstractUser):
     profile_picture_url = models.URLField(blank=True, null=True)
     last_login = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    bio = models.TextField(blank=True, null=True)
     
     groups = models.ManyToManyField(
         Group,
@@ -36,12 +47,24 @@ class Course(models.Model):
     """
     Course model representing educational content
     """
+    days_of_week = (
+        ('Mon', 'Monday'),
+        ('Tue', 'Tuesday'),
+        ('Wed', 'Wednesday'),
+        ('Thu', 'Thursday'),
+        ('Fri', 'Friday'),
+        ('Sat', 'Saturday'),
+        ('Sun', 'Sunday'),
+    )
+
     course_id = models.AutoField(primary_key=True)
     course_code = models.CharField(max_length=50)
     title = models.CharField(max_length=255)
     subject = models.CharField(max_length=100)
     description = models.TextField()
     enrolled_users = models.ManyToManyField(User, through='UserCourse')
+    study_schedules_day = models.CharField(max_length=3, choices=days_of_week)
+    study_schedules_time = models.TimeField()
     
     def __str__(self):
         return f"{self.course_code}: {self.title}"
@@ -61,43 +84,6 @@ class UserCourse(models.Model):
         
     def __str__(self):
         return f"{self.user.email} enrolled in {self.course.course_code}"
-
-
-class StudySession(models.Model):
-    """
-    Study session model for organizing study events
-    """
-    session_id = models.AutoField(primary_key=True)
-    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_sessions')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='study_sessions')
-    title = models.CharField(max_length=255)
-    description = models.TextField()
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
-    location = models.CharField(max_length=255)
-    is_virtual = models.BooleanField(default=False)
-    meeting_link = models.URLField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    participants = models.ManyToManyField(User, through='SessionParticipant', related_name='joined_sessions')
-    
-    def __str__(self):
-        return f"{self.title} ({self.course.course_code})"
-
-
-class SessionParticipant(models.Model):
-    """
-    Many-to-many relationship between users and study sessions
-    """
-    participant_id = models.AutoField(primary_key=True)
-    session = models.ForeignKey(StudySession, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    joined_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        unique_together = ('session', 'user')
-        
-    def __str__(self):
-        return f"{self.user.email} in session {self.session.session_id}"
 
 
 class Friendship(models.Model):
@@ -128,10 +114,15 @@ class SocialMediaLink(models.Model):
     """
     Social media links associated with a user
     """
+    platform_choices = (
+        ('Facebook', 'Facebook'),
+        ('Instagram', 'Instagram'),
+    )
+
     link_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='social_links')
-    platform = models.CharField(max_length=50)
-    url = models.URLField()
+    platform = models.CharField(max_length=50, choices=platform_choices)
+    name = models.CharField(max_length=50)
     
     class Meta:
         unique_together = ('user', 'platform')

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Course, UserCourse, StudySession, SessionParticipant, Friendship, SocialMediaLink
+from .models import *
 
 
 class CustomUserAdmin(BaseUserAdmin):
@@ -15,24 +15,11 @@ class UserCourseInline(admin.TabularInline):
     extra = 0
 
 
-class SessionParticipantInline(admin.TabularInline):
-    model = SessionParticipant
-    extra = 0
-
-
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
     list_display = ('course_code', 'title', 'subject')
     search_fields = ('course_code', 'title')
     inlines = [UserCourseInline]
-
-
-@admin.register(StudySession)
-class StudySessionAdmin(admin.ModelAdmin):
-    list_display = ('title', 'course', 'start_time', 'end_time', 'is_virtual')
-    search_fields = ('title',)
-    list_filter = ('is_virtual',)
-    inlines = [SessionParticipantInline]
 
 
 @admin.register(Friendship)
@@ -44,10 +31,9 @@ class FriendshipAdmin(admin.ModelAdmin):
 
 @admin.register(SocialMediaLink)
 class SocialMediaLinkAdmin(admin.ModelAdmin):
-    list_display = ('user', 'platform', 'url')
+    list_display = ('user', 'platform', 'name')
     search_fields = ('user__email', 'platform')
 
 
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(UserCourse)
-admin.site.register(SessionParticipant)

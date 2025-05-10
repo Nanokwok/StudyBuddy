@@ -1,11 +1,11 @@
 from rest_framework import serializers
-from .models import User, Course, UserCourse, StudySession, SessionParticipant, Friendship, SocialMediaLink
+from .models import *
 
 
 class SocialMediaLinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = SocialMediaLink
-        fields = ['link_id', 'platform', 'url']
+        fields = ['link_id', 'platform', 'name']
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -74,59 +74,6 @@ class UserCourseSerializer(serializers.ModelSerializer):
             course=course
         )
         return user_course
-
-
-class StudySessionListSerializer(serializers.ModelSerializer):
-    creator = UserBasicSerializer(read_only=True)
-    course = CourseSerializer(read_only=True)
-    participant_count = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = StudySession
-        fields = ['session_id', 'title', 'creator', 'course', 
-                  'start_time', 'end_time', 'location', 
-                  'is_virtual', 'participant_count']
-    
-    def get_participant_count(self, obj):
-        return obj.participants.count()
-
-
-class SessionParticipantSerializer(serializers.ModelSerializer):
-    user = UserBasicSerializer(read_only=True)
-    
-    class Meta:
-        model = SessionParticipant
-        fields = ['participant_id', 'user', 'joined_at']
-
-
-class StudySessionDetailSerializer(serializers.ModelSerializer):
-    creator = UserBasicSerializer(read_only=True)
-    course = CourseSerializer(read_only=True)
-    participants = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = StudySession
-        fields = ['session_id', 'title', 'description', 'creator', 'course',
-                  'start_time', 'end_time', 'location', 'is_virtual',
-                  'meeting_link', 'created_at', 'participants']
-    
-    def get_participants(self, obj):
-        participants = SessionParticipant.objects.filter(session=obj)
-        return SessionParticipantSerializer(participants, many=True).data
-    
-    def create(self, validated_data):
-        creator_id = self.context['request'].data.get('creator_id')
-        course_id = self.context['request'].data.get('course_id')
-        
-        creator = User.objects.get(id=creator_id)
-        course = Course.objects.get(course_id=course_id)
-        
-        session = StudySession.objects.create(
-            creator=creator,
-            course=course,
-            **validated_data
-        )
-        return session
 
 
 class FriendshipSerializer(serializers.ModelSerializer):

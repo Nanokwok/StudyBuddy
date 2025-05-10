@@ -4,16 +4,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import get_object_or_404
 
-from .models import (
-    User, Course, UserCourse, StudySession, 
-    SessionParticipant, Friendship, SocialMediaLink
-)
-from .serializers import (
-    UserSerializer, UserBasicSerializer, CourseSerializer, CourseDetailSerializer,
-    UserCourseSerializer, StudySessionListSerializer, StudySessionDetailSerializer,
-    SessionParticipantSerializer, FriendshipSerializer, FriendshipUpdateSerializer,
-    SocialMediaLinkSerializer
-)
+from .models import *
+from .serializers import *
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -27,32 +19,14 @@ class UserViewSet(viewsets.ModelViewSet):
             return [AllowAny()]
         return [IsAuthenticated()]
     
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['get', 'patch'])
     def courses(self, request, pk=None):
         user = self.get_object()
         user_courses = UserCourse.objects.filter(user=user)
         serializer = UserCourseSerializer(user_courses, many=True)
         return Response(serializer.data)
     
-    @action(detail=True, methods=['get'])
-    def study_sessions(self, request, pk=None):
-        user = self.get_object()
-        # Get sessions created by the user
-        created_sessions = StudySession.objects.filter(creator=user)
-        # Get sessions the user is participating in
-        participating_sessions = StudySession.objects.filter(
-            participants__user=user
-        ).exclude(creator=user)
-        
-        created_serializer = StudySessionListSerializer(created_sessions, many=True)
-        participating_serializer = StudySessionListSerializer(participating_sessions, many=True)
-        
-        return Response({
-            'created_sessions': created_serializer.data,
-            'participating_sessions': participating_serializer.data
-        })
-    
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['get', 'patch'])
     def friendships(self, request, pk=None):
         user = self.get_object()
         # Get friendships where the user is the requester
@@ -68,12 +42,35 @@ class UserViewSet(viewsets.ModelViewSet):
             'received_requests': received_serializer.data
         })
     
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['get', 'patch', 'post'])
     def social_links(self, request, pk=None):
         user = self.get_object()
         links = SocialMediaLink.objects.filter(user=user)
         serializer = SocialMediaLinkSerializer(links, many=True)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['get', 'patch'])
+    def me(self, request):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def upload_profile_picture(self, request):
+        if 'profile_picture' not in request.FILES:
+            return Response(
+                {'error': 'No image provided'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = request.user
+        image = request.FILES['profile_picture']
+
+        user.profile_picture_url = handle_uploaded_file(image)
+        user.save()
+
+        return Response({
+            'profile_picture_url': user.profile_picture_url
+        })
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -92,13 +89,6 @@ class CourseViewSet(viewsets.ModelViewSet):
         course = self.get_object()
         user_courses = UserCourse.objects.filter(course=course)
         serializer = UserCourseSerializer(user_courses, many=True)
-        return Response(serializer.data)
-    
-    @action(detail=True, methods=['get'])
-    def study_sessions(self, request, pk=None):
-        course = self.get_object()
-        sessions = StudySession.objects.filter(course=course)
-        serializer = StudySessionListSerializer(sessions, many=True)
         return Response(serializer.data)
 
 
@@ -141,69 +131,6 @@ class UserCourseViewSet(viewsets.ModelViewSet):
         enrollment.delete()
         
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class StudySessionViewSet(viewsets.ModelViewSet):
-    queryset = StudySession.objects.all()
-    permission_classes = [IsAuthenticated]
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['title', 'description', 'location']
-    
-    def get_serializer_class(self):
-        if self.action in ['retrieve', 'create', 'update', 'partial_update']:
-            return StudySessionDetailSerializer
-        return StudySessionListSerializer
-    
-    def perform_create(self, serializer):
-        serializer.save(creator=self.request.user)
-    
-    @action(detail=True, methods=['get'])
-    def participants(self, request, pk=None):
-        session = self.get_object()
-        participants = SessionParticipant.objects.filter(session=session)
-        serializer = SessionParticipantSerializer(participants, many=True)
-        return Response(serializer.data)
-    
-    @action(detail=True, methods=['post'])
-    def join(self, request, pk=None):
-        session = self.get_object()
-        user = request.user
-        
-        # Check if user is already a participant
-        if SessionParticipant.objects.filter(session=session, user=user).exists():
-            return Response(
-                {'detail': 'User is already a participant in this session.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Create participant
-        participant = SessionParticipant.objects.create(
-            session=session,
-            user=user
-        )
-        
-        serializer = SessionParticipantSerializer(participant)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
-    @action(detail=True, methods=['post'])
-    def leave(self, request, pk=None):
-        session = self.get_object()
-        user = request.user
-        
-        participant = get_object_or_404(
-            SessionParticipant,
-            session=session,
-            user=user
-        )
-        participant.delete()
-        
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class SessionParticipantViewSet(viewsets.ModelViewSet):
-    queryset = SessionParticipant.objects.all()
-    serializer_class = SessionParticipantSerializer
-    permission_classes = [IsAuthenticated]
 
 
 class FriendshipViewSet(viewsets.ModelViewSet):
