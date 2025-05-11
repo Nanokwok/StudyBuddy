@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView, StatusBar } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import SearchBarWithSubjects from '@/components/SearchBarWithSubjects';
-import AddFriendBox from '@/components/add/AddFriendBox';
+import AddFriendBox from '@/components/AddFriends/AddFriendBox';
 
 const AddFriendsPage = () => {
   const [searchText, setSearchText] = useState('');

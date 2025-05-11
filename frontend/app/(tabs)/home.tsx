@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Sessions } from '@/components/session';
-import type { Session } from '@/components/session/types';
+import { Sessions } from '@/components/Home';
+import type { Session } from '@/components/Home';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 
 const HomeScreen = () => {

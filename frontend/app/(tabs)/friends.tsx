@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView, StatusBar } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import SearchBarWithSubjects from '@/components/SearchBarWithSubjects';
-import FriendBox from '@/components/friends/FriendBox';
+import FriendBox from '@/components/Friends/FriendBox';
 import { useRouter } from 'expo-router';
 import api from '../../core/api';
 

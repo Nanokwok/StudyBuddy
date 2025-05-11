@@ -1,7 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
-import CalendarEvent from '@/components/session/CalendarEvent';
+import CalendarEvent from './CalendarEvent';
 import { Session } from './types';
 import { styles } from './styles';
 

@@ -17,12 +17,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 import api from '../../core/api';
 import { useAuth } from '../../context/AuthContext';
 import { UserData } from '../../types';
-import ProfileHeader from '@/components/ProfileEditScreen/ProfileHeader';
-import CoursesSection from '@/components/ProfileEditScreen/CoursesSection';
-import FriendsSection from '@/components/ProfileEditScreen/FriendsSection';
-import SocialMediaSection from '@/components/ProfileEditScreen/SocialMediaSection';
-import ActionButtons from '@/components/ProfileEditScreen/ActionButtons';
-import LogoutButton from '@/components/ProfileEditScreen/LogoutButton';
+import ProfileHeader from '@/components/ProfileEdit/ProfileHeader';
+import CoursesSection from '@/components/ProfileEdit/CoursesSection';
+import FriendsSection from '@/components/ProfileEdit/FriendsSection';
+import SocialMediaSection from '@/components/ProfileEdit/SocialMediaSection';
+import ActionButtons from '@/components/ProfileEdit/ActionButtons';
+import LogoutButton from '@/components/ProfileEdit/LogoutButton';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 
 export default function ProfileEditScreen() {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { FriendRequestsScreen } from '@/components/request';
+import { FriendRequestsScreen } from '@/components/FriendRequest';
 import api from '../../core/api';
-import { FriendRequest } from '@/components/request/types';
+import { FriendRequest } from '@/components/FriendRequest/types';
 
 const FriendRequestsPage = () => {
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
