@@ -9,7 +9,6 @@ interface FriendRequestsScreenProps {
   requests: FriendRequest[];
   onAccept: (id: string) => void;
   onDecline: (id: string) => void;
-  onPress: (id: string) => void;
   loading?: boolean;
   error?: string | null;
 }
@@ -18,7 +17,6 @@ const FriendRequestsScreen: React.FC<FriendRequestsScreenProps> = ({
   requests,
   onAccept,
   onDecline,
-  onPress,
   loading,
   error,
 }) => {
@@ -47,7 +45,6 @@ const FriendRequestsScreen: React.FC<FriendRequestsScreenProps> = ({
         requests={requests}
         onAccept={onAccept}
         onDecline={onDecline}
-        onPress={onPress}
       />
     </ThemedView>
   );

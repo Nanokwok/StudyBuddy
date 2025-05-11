@@ -10,15 +10,10 @@ const FriendRequestBox: React.FC<FriendRequestBoxProps> = ({
   request,
   onAccept,
   onDecline,
-  onPress,
 }) => {
   return (
     <ThemedView style={styles.section}>
-      <TouchableOpacity 
-        style={styles.container}
-        onPress={onPress}
-        activeOpacity={0.9}
-      >
+      <View style={styles.container}>
         <View style={styles.headerContainer}>
           <View style={styles.userInfo}>
             <Image 
@@ -50,7 +45,7 @@ const FriendRequestBox: React.FC<FriendRequestBoxProps> = ({
             <Tag key={`${request.id}-${index}`} label={tag} />
           ))}
         </View>
-      </TouchableOpacity>
+      </View>
     </ThemedView>
   );
 };

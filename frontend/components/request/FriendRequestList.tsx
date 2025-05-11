@@ -8,7 +8,6 @@ const FriendRequestList: React.FC<FriendRequestListProps> = ({
   requests,
   onAccept,
   onDecline,
-  onPress,
 }) => {
   return (
     <ScrollView 
@@ -21,7 +20,6 @@ const FriendRequestList: React.FC<FriendRequestListProps> = ({
             request={request}
             onAccept={() => onAccept(request.id)}
             onDecline={() => onDecline(request.id)}
-            onPress={() => onPress(request.id)}
           />
         </ThemedView>
       ))}

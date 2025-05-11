@@ -1,48 +1,59 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FriendRequestsScreen } from '@/components/request';
-import { useState } from 'react';
+import api from '../../core/api';
+import { FriendRequest } from '@/components/request/types';
 
 const FriendRequestsPage = () => {
-  // Mock data for friend requests
-  const [friendRequests, setFriendRequests] = useState([
-    {
-      id: '1',
-      name: 'Poy Napapach',
-      description: 'Engineering, Software and Knowledge Engineering',
-      avatarUrl: 'https://placehold.co/40x40',
-      tags: ['Software Design', 'Mobile Dev'],
-    },
-    {
-      id: '2',
-      name: 'Nano Atikarn',
-      description: 'Engineering, Software and Knowledge Engineering',
-      avatarUrl: 'https://placehold.co/40x40',
-      tags: ['ISP', 'Mobile Dev'],
-    },
-    {
-      id: '3',
-      name: 'Amara Lin',
-      description: 'Humanity, Chinese',
-      avatarUrl: 'https://placehold.co/40x40',
-      tags: ['Thai language'],
-    },
-  ]);
+  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleAccept = (id: string) => {
-    console.log(`Accepted friend request ${id}`);
-    // Filter out the accepted request
-    setFriendRequests(prev => prev.filter(req => req.id !== id));
+  const fetchFriendRequests = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('users/pending_friend_requests/');
+      const data = res.data;
+
+      const formatted = data.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        description: item.description || '',
+        avatarUrl: item.profile_picture_url || 'https://placehold.co/40x40',
+        tags: item.tags || [],
+      }));
+
+      setFriendRequests(formatted);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch friend requests', err);
+      setError('Failed to load friend requests');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDecline = (id: string) => {
-    console.log(`Declined friend request ${id}`);
-    // Filter out the declined request
-    setFriendRequests(prev => prev.filter(req => req.id !== id));
+  useEffect(() => {
+    fetchFriendRequests();
+  }, []);
+
+  const handleAccept = async (id: string) => {
+    try {
+      await api.post(`friendships/${id}/accept/`);
+      setFriendRequests(prev => prev.filter(req => req.id !== id));
+    } catch (err) {
+      console.error('Failed to accept', err);
+      setError('Failed to accept friend request');
+    }
   };
 
-  const handlePress = (id: string) => {
-    console.log(`Pressed friend request ${id}`);
-    // Navigate to profile or other action
+  const handleDecline = async (id: string) => {
+    try {
+      await api.post(`friendships/${id}/reject/`);
+      setFriendRequests(prev => prev.filter(req => req.id !== id));
+    } catch (err) {
+      console.error('Failed to decline', err);
+      setError('Failed to decline friend request');
+    }
   };
 
   return (
@@ -50,7 +61,8 @@ const FriendRequestsPage = () => {
       requests={friendRequests}
       onAccept={handleAccept}
       onDecline={handleDecline}
-      onPress={handlePress}
+      loading={loading}
+      error={error}
     />
   );
 };
