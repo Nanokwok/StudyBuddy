@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { ThemedView } from '../ThemedView';
-import { ThemedText } from '../ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
 import { MaterialIcons } from '@expo/vector-icons';
-import Tag from '../Tag';
+import Tag from '@/components/Tag';
 
 interface Friend {
   id: string;
@@ -15,11 +15,10 @@ interface Friend {
 
 interface FriendBoxProps {
   friend: Friend;
-  onViewProfile: () => void;
+  onViewProfile: (id: string) => void;
 }
 
 const FriendBox: React.FC<FriendBoxProps> = ({ friend, onViewProfile }) => {
-  console.log('Bio:', friend.bio);
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
@@ -36,7 +35,7 @@ const FriendBox: React.FC<FriendBoxProps> = ({ friend, onViewProfile }) => {
         
         <TouchableOpacity 
           style={styles.profileButton}
-          onPress={onViewProfile}
+          onPress={() => onViewProfile(friend.id)}
         >
           <MaterialIcons name="person" size={16} color="white" />
         </TouchableOpacity>

@@ -4,15 +4,24 @@ import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import SearchBarWithSubjects from '@/components/SearchBarWithSubjects';
 import FriendBox from '@/components/Friends/FriendBox';
-import { useRouter } from 'expo-router';
-import api from '../../core/api';
+import api from '@/core/api';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+
+interface Friend {
+  id: string;
+  name: string;
+  bio: string;
+  avatarUrl: string;
+  tags: string[];
+}
 
 const FriendsPage = () => {
   const router = useRouter();
   const [searchText, setSearchText] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
-  const [friends, setFriends] = useState<any[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(true);
+  const { refresh } = useLocalSearchParams();
 
   const fetchFriends = async () => {
     try {
@@ -34,22 +43,21 @@ const FriendsPage = () => {
             const enrollRes = await api.get(`/users/${friend.id}/courses/`);
             const tags = enrollRes.data.map((c: any) => c.course.subject);
 
-            console.log('Bio:', friend.bio);
-
             return {
               id: friend.id,
-              name: `${friend.first_name} ${friend.last_name}`,
-              bio: friend.bio || 'No major info',
+              name: `${friend.first_name} ${friend.last_name}`.trim(),
+              bio: friend.bio || 'No bio available',
               avatarUrl: friend.profile_picture_url || 'https://placehold.co/40x40',
               tags,
             };
           } catch (err) {
+            console.error(`Error fetching courses for friend ${friend.id}:`, err);
             return null;
           }
         })
       );
 
-      setFriends(friendsWithCourses.filter(Boolean));
+      setFriends(friendsWithCourses.filter(Boolean) as Friend[]);
     } catch (err) {
       console.error('Error fetching friends', err);
     } finally {
@@ -63,7 +71,7 @@ const FriendsPage = () => {
 
   const handleViewProfile = (friendId: string) => {
     router.push({
-      pathname: '/Profile',
+      pathname: '/profile/[userId]',
       params: { userId: friendId }
     });
   };
@@ -106,7 +114,9 @@ const FriendsPage = () => {
 
       <ScrollView style={styles.friendsList}>
         {loading ? (
-          <ThemedText>Loading...</ThemedText>
+          <ThemedView style={styles.emptyState}>
+            <ThemedText>Loading friends...</ThemedText>
+          </ThemedView>
         ) : filteredFriends.length > 0 ? (
           filteredFriends.map(friend => (
             <FriendBox
@@ -140,6 +150,7 @@ const styles = StyleSheet.create({
   },
   friendsList: {
     flex: 1,
+    paddingHorizontal: 16,
   },
   emptyState: {
     flex: 1,
