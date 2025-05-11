@@ -130,7 +130,7 @@ class UserViewSet(viewsets.ModelViewSet):
             data.append({
                 'id': f.friendship_id,
                 'name': sender.get_full_name(),
-                'description': sender.bio or '',
+                'bio': sender.bio or '',
                 'profile_picture_url': sender_data['profile_picture_url'],
                 'tags': tags
             })
