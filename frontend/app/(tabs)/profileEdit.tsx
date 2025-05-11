@@ -100,8 +100,6 @@ export default function ProfileEditScreen() {
         },
         profilePictureUrl: user.profile_picture_url || ''
       };
-
-      console.log('ProfilePictureUrl', user.profile_picture_url);
   
       setUserData(newUserData);
       setEditData(newUserData);
@@ -115,10 +113,8 @@ export default function ProfileEditScreen() {
 
   useEffect(() => {
     fetchUserData();
-    // Set status bar to light content for better visibility with the gradient header
     StatusBar.setBarStyle('light-content');
     return () => {
-      // Reset to default when unmounting
       StatusBar.setBarStyle('dark-content');
     };
   }, []);
@@ -140,8 +136,6 @@ export default function ProfileEditScreen() {
   const updateSocialLinks = async () => {
     try {
       const currentLinks = await api.get('social-links/');
-      
-      // Handle Instagram link
       const instagramLink = currentLinks.data.find((link: any) => link.platform.toLowerCase() === 'instagram');
       if (instagramLink) {
         if (editData.social.instagram) {

@@ -26,7 +26,7 @@ const FriendRequestBox: React.FC<FriendRequestBoxProps> = ({
                 {request.name}
               </ThemedText>
               <ThemedText type="subtitle" style={styles.description}>
-                {request.description}
+                {request.bio}
               </ThemedText>
             </View>
           </View>

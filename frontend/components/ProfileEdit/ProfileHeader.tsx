@@ -12,7 +12,6 @@ interface ProfileHeaderProps {
 }
 
 const ProfileHeader = ({ userData, editData, isEditing, onEditChange }: ProfileHeaderProps) => {
-  // Get initials for avatar
   const getInitials = () => {
     const first = userData.firstName ? userData.firstName.charAt(0) : '';
     const last = userData.lastName ? userData.lastName.charAt(0) : 
@@ -94,7 +93,7 @@ const ProfileHeader = ({ userData, editData, isEditing, onEditChange }: ProfileH
               style={styles.bioInput}
               value={editData.bio}
               onChangeText={(text) => onEditChange('bio', text)}
-              placeholder="Write a short bio about yourself..."
+              placeholder="Write a short bio about yourself or your major..."
               placeholderTextColor={COLORS.textPlaceholder}
               multiline
               numberOfLines={3}

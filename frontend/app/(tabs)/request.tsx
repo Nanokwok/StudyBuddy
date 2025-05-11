@@ -17,7 +17,7 @@ const FriendRequestsPage = () => {
       const formatted = data.map((item: any) => ({
         id: item.id,
         name: item.name,
-        description: item.description || '',
+        bio: item.bio || '',
         avatarUrl: item.profile_picture_url || 'https://placehold.co/40x40',
         tags: item.tags || [],
       }));

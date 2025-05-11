@@ -1,7 +1,7 @@
 export interface FriendRequest {
   id: string;
   name: string;
-  description: string;
+  bio: string;
   avatarUrl: string;
   tags: string[];
 }
