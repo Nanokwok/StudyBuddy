@@ -130,3 +130,9 @@ class FriendshipUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Friendship
         fields = ['status']
+
+
+class UserProfilePictureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['profile_picture_url']

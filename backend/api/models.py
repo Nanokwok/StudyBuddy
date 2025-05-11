@@ -4,24 +4,27 @@ from django.utils.translation import gettext_lazy as _
 
 def upload_thumbnail(instance, filename):
     """
-    Function to define the upload path for user profile pictures
+    Return the S3 path where the user's profile picture will be stored.
+    Format: profile_pictures/username/filename.ext
     """
-    path = f'profile_pictures/{instance.username}'
     extension = filename.split('.')[-1]
-    if extension:
-        path = path + '.' + extension
-    return path
+    return f'profile_pictures/{instance.username}/profile.{extension}'
 
 
 class User(AbstractUser):
     """
-    Custom user model extending Django's AbstractUser
+    Custom user model extending Django's AbstractUser.
+    Adds profile picture, bio, timestamps, and permissions.
     """
-    profile_picture_url = models.URLField(blank=True, null=True)
+    profile_picture_url = models.ImageField(
+        upload_to=upload_thumbnail,
+        blank=True,
+        null=True
+    )
     last_login = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     bio = models.TextField(blank=True, null=True)
-    
+
     groups = models.ManyToManyField(
         Group,
         verbose_name='groups',

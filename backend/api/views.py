@@ -2,8 +2,11 @@ from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.shortcuts import get_object_or_404
 from datetime import datetime, timedelta
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 import pytz
 from django.utils.timezone import now
 from django.db.models import Q
@@ -94,7 +97,7 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser])
     def upload_profile_picture(self, request):
         """Upload a profile picture for the authenticated user."""
         if 'profile_picture' not in request.FILES:
@@ -106,12 +109,16 @@ class UserViewSet(viewsets.ModelViewSet):
         user = request.user
         image = request.FILES['profile_picture']
 
-        user.profile_picture_url = handle_uploaded_file(image)
+        path = default_storage.save(f'profile_pictures/{user.username}.{image.name.split(".")[-1]}', ContentFile(image.read()))
+        full_url = request.build_absolute_uri(default_storage.url(path))
+
+        user.profile_picture_url = full_url
         user.save()
 
         return Response({
             'profile_picture_url': user.profile_picture_url
         })
+
     
     @action(detail=True, methods=['get'])
     def friendship_count(self, request, pk=None):
@@ -347,7 +354,7 @@ class FriendshipViewSet(viewsets.ModelViewSet):
                 'id': u.id,
                 'name': u.get_full_name(),
                 'description': u.bio,
-                'profile_picture_url': u.profile_picture_url,
+                'profile_picture_url': str(u.profile_picture_url) if u.profile_picture_url else '',
                 'tags': [uc.course.title for uc in u.usercourse_set.all()],
             }
             for u in candidates
@@ -375,4 +382,3 @@ class SocialMediaLinkViewSet(viewsets.ModelViewSet):
             serializer.save(user=self.request.user, platform=platform)
         else:
             serializer.save(user=self.request.user)
-            
