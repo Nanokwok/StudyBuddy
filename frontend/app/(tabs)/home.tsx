@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Sessions } from '@/components/Home';
 import type { Session } from '@/components/Home';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
+import api from '../../core/api';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -11,62 +12,22 @@ const HomeScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Mock data for sessions
-  const mockSessions: Session[] = [
-    {
-      id: '1',
-      title: "Calculus",
-      date: "Oct 12, 2023",
-      time: "3:00 PM"
-    },
-    {
-      id: '2',
-      title: "Mobile Dev",
-      date: "Oct 12, 2023",
-      time: "6:00 PM"
-    },
-    {
-      id: '3',
-      title: "Physics",
-      date: "Oct 13, 2023",
-      time: "2:00 PM"
-    },
-    {
-      id: '4',
-      title: "Chemistry",
-      date: "Oct 14, 2023",
-      time: "4:00 PM"
-    },
-    {
-      id: '5',
-      title: "Biology",
-      date: "Oct 15, 2023",
-      time: "1:00 PM"
-    }
-  ];
-
-  useEffect(() => {
-    setSessions(mockSessions);
-    setLoading(false);
-  }, []);
-
-  /*
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const response = await axios.get<Session[]>('session-api-endpoint');
-        setSessions(response.data);
+        const res = await api.get('enrollments/upcoming_sessions/')
+        setSessions(res.data);
       } catch (err) {
-        setError(err.message);
-        Alert.alert('Error', 'Failed to fetch sessions');
+        console.error('Failed to fetch sessions', err);
+        setError('Failed to load sessions');
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchSessions();
   }, []);
-  */
+  
 
   if (loading) {
     return (
@@ -90,8 +51,6 @@ const HomeScreen = () => {
         sessions={sessions}
         loading={loading}
         error={error}
-        // onSeeAllPress={() => navigation.navigate('AllSessions')}
-        // onMorePress={() => navigation.navigate('Friends')}
       />
     </ProtectedRoute>
   );

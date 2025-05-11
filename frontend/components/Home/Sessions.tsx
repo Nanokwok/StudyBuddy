@@ -9,7 +9,6 @@ import { ThemedText } from '@/components/ThemedText';
 
 export const Sessions: React.FC<SessionsProps> = ({ 
   sessions = [],
-  onSeeAllPress, 
   onMorePress,
   loading,
   error
@@ -31,11 +30,6 @@ export const Sessions: React.FC<SessionsProps> = ({
 
       {/* Second Section - Sessions List */}
       <ThemedView style={styles.section}>
-        <SectionHeader 
-          title="Your Sessions"
-          showArrow={hasMoreSessions}
-          onPress={onSeeAllPress}
-        />
         <SessionList sessions={sessions} />
       </ThemedView>
 
@@ -44,8 +38,6 @@ export const Sessions: React.FC<SessionsProps> = ({
         <SectionHeader 
           title="Friends"
           subtitle="Connect with classmates"
-          showArrow
-          onPress={onMorePress}
         />
       </ThemedView>
     </ThemedView>
