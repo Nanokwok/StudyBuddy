@@ -26,17 +26,15 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = UserCourseSerializer(user_courses, many=True)
         return Response(serializer.data)
     
-    @action(detail=True, methods=['get', 'patch'])
+    @action(detail=True, methods=['get'])
     def friendships(self, request, pk=None):
         user = self.get_object()
-        # Get friendships where the user is the requester
-        sent_requests = Friendship.objects.filter(requester=user)
-        # Get friendships where the user is the addressee
-        received_requests = Friendship.objects.filter(addressee=user)
-        
+        sent_requests = Friendship.objects.filter(requester=user, status='accepted')
+        received_requests = Friendship.objects.filter(addressee=user, status='accepted')
+
         sent_serializer = FriendshipSerializer(sent_requests, many=True)
         received_serializer = FriendshipSerializer(received_requests, many=True)
-        
+
         return Response({
             'sent_requests': sent_serializer.data,
             'received_requests': received_serializer.data
@@ -79,6 +77,26 @@ class UserViewSet(viewsets.ModelViewSet):
         received = Friendship.objects.filter(addressee=user, status='accepted').count()
         return Response({'friendship_count': sent + received})
 
+    @action(detail=False, methods=['get'], url_path='pending_friend_requests')
+    def pending_friend_requests(self, request):
+        user = request.user
+        pending = Friendship.objects.filter(addressee=user, status='pending')
+        
+        data = []
+        for f in pending:
+            sender = f.requester
+            enrolled = UserCourse.objects.filter(user=sender).select_related('course')
+            tags = [uc.course.title for uc in enrolled]
+
+            data.append({
+                'id': f.friendship_id,
+                'name': sender.get_full_name(),
+                'description': sender.bio or '',
+                'profile_picture_url': sender.profile_picture_url or '',
+                'tags': tags
+            })
+
+        return Response(data)
 
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
