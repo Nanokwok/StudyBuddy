@@ -9,7 +9,7 @@ import api from '../../core/api';
 type AddableUser = {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   avatarUrl: string;
   tags: string[];
 };
@@ -23,7 +23,15 @@ const AddFriendsPage = () => {
   const fetchAddableUsers = async () => {
     try {
       const response = await api.get('friendships/addable-users/');
-      setUsers(response.data);
+      // Ensure all user objects have proper default values
+      const safeUsers = response.data.map((user: any) => ({
+        id: user.id || '',
+        name: user.name || 'Unknown User',
+        description: user.description || '',
+        avatarUrl: user.profile_picture_url || '',
+        tags: Array.isArray(user.tags) ? user.tags : []
+      }));
+      setUsers(safeUsers);
     } catch (err) {
       console.error('Failed to fetch addable users', err);
       setError('Failed to load users');
@@ -57,12 +65,16 @@ const AddFriendsPage = () => {
   };
 
   const filteredUsers = users.filter(user => {
+    const name = user.name || '';
+    const description = user.description || '';
+    const tags = user.tags || [];
+    
     const matchText =
-      user.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      user.description.toLowerCase().includes(searchText.toLowerCase());
+      name.toLowerCase().includes(searchText.toLowerCase()) ||
+      description.toLowerCase().includes(searchText.toLowerCase());
 
     const matchTag =
-      !selectedSubject || user.tags.includes(selectedSubject);
+      !selectedSubject || tags.includes(selectedSubject);
 
     return matchText && matchTag;
   });
@@ -85,11 +97,14 @@ const AddFriendsPage = () => {
       <ScrollView style={styles.friendsList}>
         {filteredUsers.length > 0 ? (
           filteredUsers.map((user) => (
-            <AddFriendBox
-              key={user.id}
-              request={user}
-              onAdd={() => handleAddFriend(user.id)}
-            />
+          <AddFriendBox
+            key={user.id}
+            request={{
+              ...user,
+              description: user.description || '',
+            }}
+            onAdd={() => handleAddFriend(user.id)}
+          />
           ))
         ) : (
           <ThemedView style={styles.emptyState}>

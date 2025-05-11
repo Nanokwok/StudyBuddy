@@ -34,6 +34,7 @@ export default function ProfileEditScreen() {
 
   // User data state
   const [userData, setUserData] = useState<UserData>({
+    id: '',
     firstName: '',
     lastName: '',
     bio: '',
@@ -44,6 +45,7 @@ export default function ProfileEditScreen() {
     courses: [],
     email: '',
     username: '',
+    profilePictureUrl: '',
     friendships: {
       count: 0
     }
@@ -71,7 +73,7 @@ export default function ProfileEditScreen() {
       const socialResponse = await api.get('social-links/');
       const friendshipResponse = await api.get(`users/${user.id}/friendship_count/`);
       const friendshipCount = friendshipResponse.data.friendship_count;
-
+  
       const courses = enrollmentsResponse.data.map((enrollment: any) => ({
         code: enrollment.course?.course_code || '',
         title: enrollment.course?.title || ''
@@ -80,7 +82,7 @@ export default function ProfileEditScreen() {
       const socialLinks = Array.isArray(socialResponse.data) ? socialResponse.data : [];
       const instagramLink = socialLinks.find(link => link?.platform?.toLowerCase() === 'instagram');
       const facebookLink = socialLinks.find(link => link?.platform?.toLowerCase() === 'facebook');
-
+  
       const newUserData = {
         firstName: user.first_name || '',
         lastName: user.last_name || '',
@@ -95,9 +97,12 @@ export default function ProfileEditScreen() {
         id: user.id,
         friendships: {
           count: friendshipCount
-        }
+        },
+        profilePictureUrl: user.profile_picture_url || ''
       };
 
+      console.log('ProfilePictureUrl', user.profile_picture_url);
+  
       setUserData(newUserData);
       setEditData(newUserData);
     } catch (error) {

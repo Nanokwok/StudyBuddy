@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, Animated, Platform } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Animated, Platform, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { UserData } from '@/types';
 import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
@@ -32,19 +32,28 @@ const ProfileHeader = ({ userData, editData, isEditing, onEditChange }: ProfileH
       <View style={styles.profileHeader}>
         <View style={styles.profileImageContainer}>
           <Animated.View style={[styles.profileImageWrapper, SHADOWS.large]}>
-            <LinearGradient
-              colors={[COLORS.primaryLight, COLORS.primaryDark]}
-              style={styles.profileImagePlaceholder}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <Text style={styles.profileImagePlaceholderText}>
-                {getInitials()}
-              </Text>
-            </LinearGradient>
+            {userData.profilePictureUrl ? (
+              <Image
+                source={{ uri: userData.profilePictureUrl }}
+                style={styles.profileImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <LinearGradient
+                colors={[COLORS.primaryLight, COLORS.primaryDark]}
+                style={styles.profileImagePlaceholder}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Text style={styles.profileImagePlaceholderText}>
+                  {getInitials()}
+                </Text>
+              </LinearGradient>
+            )}
           </Animated.View>
         </View>
     
+        {/* Rest of the component remains the same */}
         <View style={styles.nameContainer}>
           {isEditing ? (
             <View style={styles.editNameContainer}>
@@ -77,6 +86,7 @@ const ProfileHeader = ({ userData, editData, isEditing, onEditChange }: ProfileH
         </View>
       </View>
 
+      {/* Rest of the component remains the same */}
       <View style={styles.bioContainer}>
         {isEditing ? (
           <View style={styles.bioInputContainer}>
@@ -212,6 +222,11 @@ const styles = StyleSheet.create({
     color: COLORS.textPlaceholder,
     fontStyle: 'italic',
     textAlign: 'center',
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: BORDER_RADIUS.circle,
   },
 });
 
