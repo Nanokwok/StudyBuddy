@@ -49,3 +49,10 @@ htmlcov/
 .mypy_cache/
 .pyright/
 .pytest_cache/
+
+# Ignore all profile pictures and media files
+profile_pictures/
+/profile_pictures/*
+*.jpeg
+*.jpg
+*.png
