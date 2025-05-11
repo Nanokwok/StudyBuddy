@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db.models import Q
 from .models import *
 
 
@@ -10,23 +11,23 @@ class SocialMediaLinkSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     social_links = SocialMediaLinkSerializer(many=True, read_only=True)
+    friendship_count = serializers.SerializerMethodField()
     
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 
-                  'profile_picture_url','created_at', 'last_login', 'social_links']
+                  'profile_picture_url', 'created_at', 'last_login', 'social_links', 
+                  'bio', 'friendship_count']
         read_only_fields = ['id', 'created_at', 'last_login']
         extra_kwargs = {
             'password': {'write_only': True}
         }
     
-    def create(self, validated_data):
-        password = validated_data.pop('password', None)
-        user = User(**validated_data)
-        if password:
-            user.set_password(password)
-        user.save()
-        return user
+    def get_friendship_count(self, obj):
+        # Count accepted friendships where user is either requester or addressee
+        return Friendship.objects.filter(
+            (Q(requester=obj) | Q(addressee=obj)) & Q(status='accepted')
+        ).count()
 
 
 class UserBasicSerializer(serializers.ModelSerializer):
@@ -55,8 +56,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
 
 
 class UserCourseSerializer(serializers.ModelSerializer):
-    user = UserBasicSerializer(read_only=True)
-    course = CourseSerializer(read_only=True)
+    course = CourseSerializer()
     
     class Meta:
         model = UserCourse
@@ -74,6 +74,12 @@ class UserCourseSerializer(serializers.ModelSerializer):
             course=course
         )
         return user_course
+    
+    
+class CourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = ['course_id', 'course_code', 'title', 'subject']
 
 
 class FriendshipSerializer(serializers.ModelSerializer):

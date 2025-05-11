@@ -71,6 +71,13 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response({
             'profile_picture_url': user.profile_picture_url
         })
+    
+    @action(detail=True, methods=['get'])
+    def friendship_count(self, request, pk=None):
+        user = self.get_object()
+        sent = Friendship.objects.filter(requester=user, status='accepted').count()
+        received = Friendship.objects.filter(addressee=user, status='accepted').count()
+        return Response({'friendship_count': sent + received})
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -96,6 +103,9 @@ class UserCourseViewSet(viewsets.ModelViewSet):
     queryset = UserCourse.objects.all()
     serializer_class = UserCourseSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return UserCourse.objects.filter(user=self.request.user)
     
     @action(detail=False, methods=['post'])
     def enroll(self, request):
@@ -117,6 +127,13 @@ class UserCourseViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(user_course)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    @action(detail=False, methods=['get'])
+    def user_courses(self, request):
+        # Get courses the user is enrolled in with full course data
+        enrollments = UserCourse.objects.filter(user=request.user).select_related('course')
+        serializer = UserCourseSerializer(enrollments, many=True)
+        return Response(serializer.data)
     
     @action(detail=False, methods=['post'])
     def unenroll(self, request):
@@ -208,8 +225,14 @@ class SocialMediaLinkViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        # Only return social media links for the current user
+        # Return social media links for the current user
         return SocialMediaLink.objects.filter(user=self.request.user)
     
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        # Ensure platform is properly capitalized
+        platform = serializer.validated_data.get('platform')
+        if platform:
+            platform = platform.capitalize()
+            serializer.save(user=self.request.user, platform=platform)
+        else:
+            serializer.save(user=self.request.user)
