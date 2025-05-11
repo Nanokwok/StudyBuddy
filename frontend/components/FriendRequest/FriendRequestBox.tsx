@@ -11,6 +11,7 @@ const FriendRequestBox: React.FC<FriendRequestBoxProps> = ({
   onAccept,
   onDecline,
 }) => {
+  console.log('Profile url:', request.avatarUrl);
   return (
     <ThemedView style={styles.section}>
       <View style={styles.container}>

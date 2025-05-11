@@ -35,7 +35,7 @@ const SearchBarWithSubjects: React.FC<SearchBarWithSubjectsProps> = ({
           <MaterialIcons name="search" size={20} color="rgba(0, 0, 0, 0.5)" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search by course or subject"
+            placeholder="Search by course or name"
             placeholderTextColor="rgba(0, 0, 0, 0.5)"
             value={searchText}
             onChangeText={onSearchChange}

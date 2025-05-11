@@ -1,41 +1,46 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, StatusBar } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import SearchBarWithSubjects from '@/components/SearchBarWithSubjects';
 import AddFriendBox from '@/components/AddFriends/AddFriendBox';
+import api from '../../core/api';
+
+type AddableUser = {
+  id: string;
+  name: string;
+  description: string;
+  avatarUrl: string;
+  tags: string[];
+};
 
 const AddFriendsPage = () => {
   const [searchText, setSearchText] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
-  const [friendRequests, setFriendRequests] = useState([
-    {
-      id: '1',
-      name: 'Amy Worawalan',
-      description: 'Engineering, Software and Knowledge Engineering',
-      avatarUrl: 'https://placehold.co/40x40',
-      tags: ['Mathematics', 'Software Design', 'Mobile Dev']
-    },
-    {
-      id: '2',
-      name: 'Nat Peanut',
-      description: 'Engineering, Aerospace Engineering',
-      avatarUrl: 'https://placehold.co/40x40',
-      tags: ['Mathematics']
-    },
-    {
-      id: '3',
-      name: 'Tonnam Napasorn',
-      description: 'Engineering, Computer Science and Engineering',
-      avatarUrl: 'https://placehold.co/40x40',
-      tags: ['Mathematics', 'Mobile Dev']
-    }
-  ]);
+  const [users, setUsers] = useState<AddableUser[]>([]);
+  const [error, setError] = useState('');
 
-  const handleAddFriend = (id: string) => {
-    console.log(`Added friend ${id}`);
-    // Remove the friend request from the list
-    setFriendRequests(prev => prev.filter(friend => friend.id !== id));
+  const fetchAddableUsers = async () => {
+    try {
+      const response = await api.get('friendships/addable-users/');
+      setUsers(response.data);
+    } catch (err) {
+      console.error('Failed to fetch addable users', err);
+      setError('Failed to load users');
+    }
+  };
+
+  useEffect(() => {
+    fetchAddableUsers();
+  }, []);
+
+  const handleAddFriend = async (id: string) => {
+    try {
+      await api.post(`friendships/${id}/request/`);
+      setUsers(prev => prev.filter(user => user.id !== id));
+    } catch (err) {
+      console.error('Failed to send request', err);
+    }
   };
 
   const handleSearchChange = (text: string) => {
@@ -51,23 +56,25 @@ const AddFriendsPage = () => {
     setSearchText(newSubject || '');
   };
 
-  const filteredFriends = friendRequests.filter(friend => {
-    const matchesSearch = friend.name.toLowerCase().includes(searchText.toLowerCase()) || 
-                         friend.description.toLowerCase().includes(searchText.toLowerCase());
-    const matchesSubject = !selectedSubject || friend.tags.includes(selectedSubject);
-    return matchesSearch && matchesSubject;
+  const filteredUsers = users.filter(user => {
+    const matchText =
+      user.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      user.description.toLowerCase().includes(searchText.toLowerCase());
+
+    const matchTag =
+      !selectedSubject || user.tags.includes(selectedSubject);
+
+    return matchText && matchTag;
   });
 
   return (
     <ThemedView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      
-      {/* Header */}
+
       <ThemedView style={styles.header}>
         <ThemedText type="title" style={styles.title}>Find New Friends!</ThemedText>
       </ThemedView>
 
-      {/* Search Bar with Subjects */}
       <SearchBarWithSubjects 
         searchText={searchText}
         onSearchChange={handleSearchChange}
@@ -75,19 +82,18 @@ const AddFriendsPage = () => {
         selectedSubject={selectedSubject}
       />
 
-      {/* Friend Requests List */}
       <ScrollView style={styles.friendsList}>
-        {filteredFriends.length > 0 ? (
-          filteredFriends.map((friend) => (
+        {filteredUsers.length > 0 ? (
+          filteredUsers.map((user) => (
             <AddFriendBox
-              key={friend.id}
-              request={friend}
-              onAdd={() => handleAddFriend(friend.id)}
+              key={user.id}
+              request={user}
+              onAdd={() => handleAddFriend(user.id)}
             />
           ))
         ) : (
           <ThemedView style={styles.emptyState}>
-            <ThemedText>No friend requests found</ThemedText>
+            <ThemedText>No users found</ThemedText>
           </ThemedView>
         )}
       </ScrollView>
@@ -96,27 +102,11 @@ const AddFriendsPage = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 78,
-    paddingBottom: 8,
-  },
-  title: {
-    fontSize: 25,
-  },
-  friendsList: {
-    flex: 1,
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 40,
-  },
+  container: { flex: 1, backgroundColor: 'white' },
+  header: { paddingHorizontal: 16, paddingTop: 78, paddingBottom: 8 },
+  title: { fontSize: 25 },
+  friendsList: { flex: 1 },
+  emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 40 },
 });
 
 export default AddFriendsPage;
