@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.db.models import Q
 from .models import *
+from django.conf import settings
+from .utils.s3_utils import get_full_s3_url
 
 
 class SocialMediaLinkSerializer(serializers.ModelSerializer):
@@ -13,36 +15,48 @@ class SocialMediaLinkSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """
-    Serializer for user information, including social media links and friendship count.
-    """
+    profile_picture_url = serializers.SerializerMethodField()
     social_links = SocialMediaLinkSerializer(many=True, read_only=True)
     friendship_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 
-                  'profile_picture_url', 'created_at', 'last_login', 'social_links', 
-                  'bio', 'friendship_count']
+                'profile_picture_url', 'created_at', 'last_login', 'social_links', 
+                'bio', 'friendship_count']
         read_only_fields = ['id', 'created_at', 'last_login']
         extra_kwargs = {
             'password': {'write_only': True}
         }
 
+    def get_profile_picture_url(self, obj):
+        return get_full_s3_url(obj.profile_picture_url)
+
     def get_friendship_count(self, obj):
-        """Get the count of accepted friendships where the user is either the requester or addressee."""
         return Friendship.objects.filter(
             (Q(requester=obj) | Q(addressee=obj)) & Q(status='accepted')
         ).count()
 
 
 class UserBasicSerializer(serializers.ModelSerializer):
-    """
-    Lightweight User serializer for nested relationships (e.g., for displaying basic user details).
-    """
+    profile_picture_url = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = ['id', 'username', 'first_name', 'last_name', 'profile_picture_url']
+
+    def get_profile_picture_url(self, obj):
+        if not obj.profile_picture_url:
+            return None
+            
+        if hasattr(obj.profile_picture_url, 'url'):
+            url = obj.profile_picture_url.url
+        else:
+            url = str(obj.profile_picture_url)
+        
+        if url.startswith('http'):
+            return url
+        return f"https://{settings.AWS_S3_CUSTOM_DOMAIN}/{url}"
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -133,6 +147,22 @@ class FriendshipUpdateSerializer(serializers.ModelSerializer):
 
 
 class UserProfilePictureSerializer(serializers.ModelSerializer):
+    profile_picture_url = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = ['profile_picture_url']
+
+    def get_profile_picture_url(self, obj):
+        if not obj.profile_picture_url:
+            return None
+            
+        if hasattr(obj.profile_picture_url, 'url'):
+            url = obj.profile_picture_url.url
+        else:
+            url = str(obj.profile_picture_url)
+        
+        if url.startswith('http'):
+            return url
+        return f"https://{settings.AWS_S3_CUSTOM_DOMAIN}/{url}"
+    

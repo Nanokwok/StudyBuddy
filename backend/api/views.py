@@ -10,6 +10,7 @@ from django.core.files.base import ContentFile
 import pytz
 from django.utils.timezone import now
 from django.db.models import Q
+from .utils.s3_utils import get_full_s3_url
 
 from .models import *
 from .serializers import *
@@ -46,23 +47,18 @@ DAYS_MAP = {
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows users to be viewed or edited.
-    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['username', 'email', 'first_name', 'last_name']
     
     def get_permissions(self):
-        """Instantiates and returns the list of permissions that this view requires."""
         if self.action == 'create':
             return [AllowAny()]
         return [IsAuthenticated()]
     
     @action(detail=True, methods=['get', 'patch'])
     def courses(self, request, pk=None):
-        """Get the courses for a specific user."""
         user = self.get_object()
         user_courses = UserCourse.objects.filter(user=user)
         serializer = UserCourseSerializer(user_courses, many=True)
@@ -70,7 +66,6 @@ class UserViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['get'])
     def friendships(self, request, pk=None):
-        """Get the friendships for a specific user."""
         user = self.get_object()
         sent_requests = Friendship.objects.filter(requester=user, status=FRIENDSHIP_ACCEPTED)
         received_requests = Friendship.objects.filter(addressee=user, status=FRIENDSHIP_ACCEPTED)
@@ -85,7 +80,6 @@ class UserViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['get', 'patch', 'post'])
     def social_links(self, request, pk=None):
-        """Get or update social media links for a specific user."""
         user = self.get_object()
         links = SocialMediaLink.objects.filter(user=user)
         serializer = SocialMediaLinkSerializer(links, many=True)
@@ -93,13 +87,11 @@ class UserViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get', 'patch'])
     def me(self, request):
-        """Get or update the authenticated user's profile."""
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
     @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser])
     def upload_profile_picture(self, request):
-        """Upload a profile picture for the authenticated user."""
         if 'profile_picture' not in request.FILES:
             return Response(
                 {'error': 'No image provided'},
@@ -109,20 +101,15 @@ class UserViewSet(viewsets.ModelViewSet):
         user = request.user
         image = request.FILES['profile_picture']
 
-        path = default_storage.save(f'profile_pictures/{user.username}.{image.name.split(".")[-1]}', ContentFile(image.read()))
-        full_url = request.build_absolute_uri(default_storage.url(path))
+        file_extension = image.name.split('.')[-1]
+        filename = f"profile_pictures/{user.username}.{file_extension}"
+        user.profile_picture_url.save(filename, image, save=True)
 
-        user.profile_picture_url = full_url
-        user.save()
+        serializer = self.get_serializer(user)
+        return Response(serializer.data)
 
-        return Response({
-            'profile_picture_url': user.profile_picture_url
-        })
-
-    
     @action(detail=True, methods=['get'])
     def friendship_count(self, request, pk=None):
-        """Get the count of accepted friendships for a specific user."""
         user = self.get_object()
         sent = Friendship.objects.filter(requester=user, status=FRIENDSHIP_ACCEPTED).count()
         received = Friendship.objects.filter(addressee=user, status=FRIENDSHIP_ACCEPTED).count()
@@ -130,7 +117,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='pending_friend_requests')
     def pending_friend_requests(self, request):
-        """Get the pending friend requests for the authenticated user."""
         user = request.user
         pending = Friendship.objects.filter(addressee=user, status=FRIENDSHIP_PENDING)
         
@@ -139,12 +125,13 @@ class UserViewSet(viewsets.ModelViewSet):
             sender = f.requester
             enrolled = UserCourse.objects.filter(user=sender).select_related('course')
             tags = [uc.course.title for uc in enrolled]
+            sender_data = UserBasicSerializer(sender).data
 
             data.append({
                 'id': f.friendship_id,
                 'name': sender.get_full_name(),
                 'description': sender.bio or '',
-                'profile_picture_url': sender.profile_picture_url or '',
+                'profile_picture_url': sender_data['profile_picture_url'],
                 'tags': tags
             })
 
@@ -152,23 +139,18 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class CourseViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows courses to be viewed or edited.
-    """
     queryset = Course.objects.all()
     filter_backends = [filters.SearchFilter]
     search_fields = ['course_code', 'title', 'subject']
     permission_classes = [IsAuthenticated]
     
     def get_serializer_class(self):
-        """Return the appropriate serializer class based on the action."""
         if self.action == 'retrieve':
             return CourseDetailSerializer
         return CourseSerializer
     
     @action(detail=True, methods=['get'])
     def enrolled_users(self, request, pk=None):
-        """Get the enrolled users for a specific course."""
         course = self.get_object()
         user_courses = UserCourse.objects.filter(course=course)
         serializer = UserCourseSerializer(user_courses, many=True)
@@ -176,20 +158,15 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 
 class UserCourseViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for user course enrollments.
-    """
     queryset = UserCourse.objects.all()
     serializer_class = UserCourseSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Return the enrollments for the authenticated user."""
         return UserCourse.objects.filter(user=self.request.user)
     
     @action(detail=False, methods=['post'])
     def enroll(self, request):
-        """Enroll the authenticated user in a course."""
         user_id = request.user.id
         course_id = request.data.get('course_id')
         
@@ -209,14 +186,12 @@ class UserCourseViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'])
     def user_courses(self, request):
-        """Get the courses the authenticated user is enrolled in."""
         enrollments = UserCourse.objects.filter(user=request.user).select_related('course')
         serializer = UserCourseSerializer(enrollments, many=True)
         return Response(serializer.data)
     
     @action(detail=False, methods=['post'])
     def unenroll(self, request):
-        """Unenroll the authenticated user from a course."""
         user_id = request.user.id
         course_id = request.data.get('course_id')
         
@@ -231,7 +206,6 @@ class UserCourseViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='upcoming_sessions')
     def upcoming_sessions(self, request):
-        """Get the upcoming sessions for the authenticated user's courses."""
         user = request.user
         today = now().date()
         weekday_today = today.weekday()
@@ -263,22 +237,17 @@ class UserCourseViewSet(viewsets.ModelViewSet):
 
 
 class FriendshipViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for managing friendships.
-    """
     queryset = Friendship.objects.all()
     serializer_class = FriendshipSerializer
     permission_classes = [IsAuthenticated]
     
     def get_serializer_class(self):
-        """Return the appropriate serializer class based on the action."""
         if self.action in ['update', 'partial_update']:
             return FriendshipUpdateSerializer
         return FriendshipSerializer
     
     @action(detail=False, methods=['post'])
     def request_friendship(self, request):
-        """Send a friendship request to another user."""
         addressee_id = request.data.get('addressee_id')
         requester = request.user
         
@@ -302,7 +271,6 @@ class FriendshipViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'])
     def accept(self, request, pk=None):
-        """Accept a friendship request."""
         friendship = self.get_object()
         
         if friendship.addressee != request.user:
@@ -319,7 +287,6 @@ class FriendshipViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
-        """Reject a friendship request."""
         friendship = self.get_object()
         
         if friendship.addressee != request.user:
@@ -336,7 +303,6 @@ class FriendshipViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'], url_path='addable-users')
     def addable_users(self, request):
-        """Get a list of users that can be added as friends."""
         user = request.user
 
         related_ids = Friendship.objects.filter(
@@ -354,7 +320,7 @@ class FriendshipViewSet(viewsets.ModelViewSet):
                 'id': u.id,
                 'name': u.get_full_name(),
                 'description': u.bio,
-                'profile_picture_url': str(u.profile_picture_url) if u.profile_picture_url else '',
+                'profile_picture_url': UserBasicSerializer(u).data['profile_picture_url'],
                 'tags': [uc.course.title for uc in u.usercourse_set.all()],
             }
             for u in candidates
@@ -364,18 +330,13 @@ class FriendshipViewSet(viewsets.ModelViewSet):
 
 
 class SocialMediaLinkViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for managing social media links.
-    """
     serializer_class = SocialMediaLinkSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        """Return the social media links for the authenticated user."""
         return SocialMediaLink.objects.filter(user=self.request.user)
     
     def perform_create(self, serializer):
-        """Save the new social media link with the authenticated user."""
         platform = serializer.validated_data.get('platform')
         if platform:
             platform = platform.capitalize()
