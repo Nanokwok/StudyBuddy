@@ -3,10 +3,17 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import get_object_or_404
+from datetime import datetime, timedelta
+import pytz
+from django.utils.timezone import now
 
 from .models import *
 from .serializers import *
 
+DAYS_MAP = {
+    'Mon': 0, 'Tue': 1, 'Wed': 2, 'Thu': 3,
+    'Fri': 4, 'Sat': 5, 'Sun': 6
+}
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -166,6 +173,37 @@ class UserCourseViewSet(viewsets.ModelViewSet):
         enrollment.delete()
         
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['get'], url_path='upcoming_sessions')
+    def upcoming_sessions(self, request):
+        user = request.user
+        today = now().date()
+        weekday_today = today.weekday()
+
+        enrollments = UserCourse.objects.filter(user=user).select_related('course')
+
+        sessions = []
+        for enrollment in enrollments:
+            course = enrollment.course
+            day_code = course.study_schedules_day
+            target_weekday = DAYS_MAP.get(day_code)
+
+            if target_weekday is None:
+                continue
+
+            delta_days = (target_weekday - weekday_today + 7) % 7
+            class_date = today + timedelta(days=delta_days)
+
+            sessions.append({
+                'id': course.course_id,
+                'title': course.title,
+                'date': class_date.strftime('%b %d, %Y'),
+                'time': course.study_schedules_time.strftime('%I:%M %p'),
+            })
+
+        sessions = sorted(sessions, key=lambda x: datetime.strptime(x['date'], '%b %d, %Y'))[:3]
+        
+        return Response(sessions)
 
 
 class FriendshipViewSet(viewsets.ModelViewSet):
