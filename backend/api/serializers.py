@@ -43,7 +43,7 @@ class UserBasicSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'profile_picture_url']
+        fields = ['id', 'username', 'first_name', 'last_name', 'profile_picture_url', 'bio']
 
     def get_profile_picture_url(self, obj):
         if not obj.profile_picture_url:

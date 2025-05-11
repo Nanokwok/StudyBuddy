@@ -319,7 +319,7 @@ class FriendshipViewSet(viewsets.ModelViewSet):
             {
                 'id': u.id,
                 'name': u.get_full_name(),
-                'description': u.bio,
+                'bio': u.bio,
                 'profile_picture_url': UserBasicSerializer(u).data['profile_picture_url'],
                 'tags': [uc.course.title for uc in u.usercourse_set.all()],
             }
