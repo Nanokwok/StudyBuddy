@@ -8,7 +8,7 @@ import Tag from '../Tag';
 interface FriendRequest {
   id: string;
   name: string;
-  description: string;
+  bio: string;
   avatarUrl: string;
   tags: string[];
 }
@@ -29,7 +29,7 @@ const AddFriendBox: React.FC<AddFriendBoxProps> = ({ request, onAdd }) => {
           />
           <View style={styles.textContainer}>
             <ThemedText style={styles.name}>{request.name}</ThemedText>
-            <ThemedText style={styles.description}>{request.description}</ThemedText>
+            <ThemedText style={styles.description}>{request.bio}</ThemedText>
           </View>
         </View>
         

@@ -8,7 +8,7 @@ import Tag from '../Tag';
 interface Friend {
   id: string;
   name: string;
-  description: string;
+  bio: string;
   avatarUrl: string;
   tags: string[];
 }
@@ -19,6 +19,7 @@ interface FriendBoxProps {
 }
 
 const FriendBox: React.FC<FriendBoxProps> = ({ friend, onViewProfile }) => {
+  console.log('Bio:', friend.bio);
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
@@ -29,7 +30,7 @@ const FriendBox: React.FC<FriendBoxProps> = ({ friend, onViewProfile }) => {
           />
           <View style={styles.textContainer}>
             <ThemedText style={styles.name}>{friend.name}</ThemedText>
-            <ThemedText style={styles.description}>{friend.description}</ThemedText>
+            <ThemedText style={styles.description}>{friend.bio}</ThemedText>
           </View>
         </View>
         

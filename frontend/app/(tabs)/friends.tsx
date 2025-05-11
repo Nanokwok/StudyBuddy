@@ -34,10 +34,12 @@ const FriendsPage = () => {
             const enrollRes = await api.get(`/users/${friend.id}/courses/`);
             const tags = enrollRes.data.map((c: any) => c.course.subject);
 
+            console.log('Bio:', friend.bio);
+
             return {
               id: friend.id,
               name: `${friend.first_name} ${friend.last_name}`,
-              description: friend.major || 'No major info',
+              bio: friend.bio || 'No major info',
               avatarUrl: friend.profile_picture_url || 'https://placehold.co/40x40',
               tags,
             };
@@ -82,7 +84,7 @@ const FriendsPage = () => {
   const filteredFriends = friends.filter(friend => {
     const matchesSearch =
       friend.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      friend.description.toLowerCase().includes(searchText.toLowerCase());
+      friend.bio.toLowerCase().includes(searchText.toLowerCase());
 
     const matchesSubject = !selectedSubject || friend.tags.includes(selectedSubject);
     return matchesSearch && matchesSubject;
