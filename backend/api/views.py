@@ -327,6 +327,41 @@ class FriendshipViewSet(viewsets.ModelViewSet):
         ]
 
         return Response(data)
+    
+    @action(detail=False, methods=['post'], url_path='unfriend')
+    def unfriend(self, request):
+        friend_id = request.data.get('friend_id')
+        if not friend_id:
+            return Response(
+                {'detail': 'friend_id is required'},
+                status=HTTP_BAD_REQUEST
+            )
+
+        try:
+            friendship = Friendship.objects.filter(
+                (Q(requester=request.user, addressee_id=friend_id) |
+                Q(addressee=request.user, requester_id=friend_id)),
+                status=FRIENDSHIP_ACCEPTED
+            ).first()
+
+            if not friendship:
+                return Response(
+                    {'detail': 'Friendship not found or already removed'},
+                    status=HTTP_BAD_REQUEST
+                )
+
+            friendship.delete()
+            return Response(
+                {'detail': 'Successfully unfriended'},
+                status=HTTP_NO_CONTENT
+            )
+
+        except Exception as e:
+            return Response(
+                {'detail': str(e)},
+                status=HTTP_BAD_REQUEST
+            )
+
 
 
 class SocialMediaLinkViewSet(viewsets.ModelViewSet):
