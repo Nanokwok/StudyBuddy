@@ -31,9 +31,6 @@ const AddFriendsPage = () => {
   const fetchAddableUsers = async (showLoading = true) => {
     if (showLoading) setLoading(true)
     try {
-      // Simulate a delay to show loading state (remove in production)
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
       const response = await api.get("friendships/addable-users/")
       const safeUsers = response.data.map((user: any) => ({
         id: user.id || "",
@@ -64,10 +61,10 @@ const AddFriendsPage = () => {
 
   const handleAddFriend = async (id: string) => {
     try {
-      await api.post(`friendships/${id}/request/`)
-      setUsers((prev) => prev.filter((user) => user.id !== id))
+      await api.post(`friendships/request_friendship/`, { addressee_id: id });
+      setUsers((prev) => prev.filter((user) => user.id !== id));
     } catch (err) {
-      console.error("Failed to send request", err)
+      console.error("Failed to send request", err);
     }
   }
 

@@ -145,6 +145,34 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(data)
 
+    @action(detail=False, methods=['post'], url_path='request_friendship')
+    def request_friendship(self, request):
+        addressee_id = request.data.get('addressee_id')
+        requester = request.user
+        
+        try:
+            addressee = User.objects.get(id=addressee_id)
+        except User.DoesNotExist:
+            return Response(
+                {'detail': 'User not found.'},
+                status=HTTP_BAD_REQUEST
+            )
+        
+        if requester.id == addressee_id:
+            return Response(
+                {'detail': 'Cannot send friend request to yourself.'},
+                status=HTTP_BAD_REQUEST
+            )
+        
+        friendship = Friendship.objects.create(
+            requester=requester,
+            addressee_id=addressee_id,
+            status=FRIENDSHIP_PENDING
+        )
+        
+        serializer = self.get_serializer(friendship)
+        return Response(serializer.data, status=HTTP_CREATED)
+
 
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
