@@ -1,4 +1,4 @@
-from rest_framework import viewsets, filters, status
+from rest_framework import viewsets, filters, status, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -45,13 +45,21 @@ DAYS_MAP = {
     'Sun': SUNDAY
 }
 
+class CreateUserView(generics.CreateAPIView):
+  """
+  View to create a new user
+  """
+  queryset = User.objects.all()
+  serializer_class = UserSerializer
+  permission_classes = [AllowAny]
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['username', 'email', 'first_name', 'last_name']
-    
+
     def get_permissions(self):
         if self.action == 'create':
             return [AllowAny()]

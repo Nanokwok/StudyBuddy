@@ -21,13 +21,17 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 
-                'profile_picture_url', 'created_at', 'last_login', 'social_links', 
-                'bio', 'friendship_count']
-        read_only_fields = ['id', 'created_at', 'last_login']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name',
+                'profile_picture_url', 'created_at', 'last_login', 'social_links',
+                'bio', 'friendship_count', 'password']
+        read_only_fields = ['id', 'created_at', 'last_login', 'profile_picture_url', 'social_links', 'friendship_count']
         extra_kwargs = {
             'password': {'write_only': True}
         }
+
+    def create(self, validated_data):
+        print("Creating user with data:", validated_data)
+        return User.objects.create_user(**validated_data)
 
     def get_profile_picture_url(self, obj):
         return get_full_s3_url(obj.profile_picture_url)
