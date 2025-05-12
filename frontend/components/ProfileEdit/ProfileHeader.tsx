@@ -1,100 +1,114 @@
-import React from 'react';
-import { View, Text, TextInput, StyleSheet, Animated, Platform, Image } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { UserData } from '@/types';
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
+"use client"
+
+import type React from "react"
+import { useRef, useEffect } from "react"
+import { View, Text, TextInput, StyleSheet, Animated, Image } from "react-native"
+import type { UserData } from "@/types"
+import { MaterialIcons } from "@expo/vector-icons"
 
 interface ProfileHeaderProps {
-  userData: UserData;
-  editData: UserData;
-  isEditing: boolean;
-  onEditChange: (field: string, value: string) => void;
+  userData: UserData
+  editData: UserData
+  isEditing: boolean
+  onEditChange: (field: string, value: string) => void
 }
 
-const ProfileHeader = ({ userData, editData, isEditing, onEditChange }: ProfileHeaderProps) => {
+const ProfileHeader: React.FC<ProfileHeaderProps> = ({ userData, editData, isEditing, onEditChange }) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current
+  const scaleAnim = useRef(new Animated.Value(0.95)).current
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start()
+  }, [])
+
   const getInitials = () => {
-    const first = userData.firstName ? userData.firstName.charAt(0) : '';
-    const last = userData.lastName ? userData.lastName.charAt(0) : 
-                userData.username ? userData.username.charAt(0).toUpperCase() : 'U';
-    return first + last;
-  };
+    const first = userData.firstName ? userData.firstName.charAt(0) : ""
+    const last = userData.lastName
+      ? userData.lastName.charAt(0)
+      : userData.username
+        ? userData.username.charAt(0).toUpperCase()
+        : "U"
+    return first + last
+  }
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={[COLORS.primaryGradientStart, COLORS.primaryGradientEnd]}
-        style={styles.headerBackground}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      />
-      
+    <Animated.View
+      style={[
+        styles.container,
+        {
+          opacity: fadeAnim,
+          transform: [{ scale: scaleAnim }],
+        },
+      ]}
+    >
       <View style={styles.profileHeader}>
         <View style={styles.profileImageContainer}>
-          <Animated.View style={[styles.profileImageWrapper, SHADOWS.large]}>
+          <View style={styles.profileImageWrapper}>
             {userData.profilePictureUrl ? (
-              <Image
-                source={{ uri: userData.profilePictureUrl }}
-                style={styles.profileImage}
-                resizeMode="cover"
-              />
+              <Image source={{ uri: userData.profilePictureUrl }} style={styles.profileImage} resizeMode="cover" />
             ) : (
-              <LinearGradient
-                colors={[COLORS.primaryLight, COLORS.primaryDark]}
-                style={styles.profileImagePlaceholder}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Text style={styles.profileImagePlaceholderText}>
-                  {getInitials()}
-                </Text>
-              </LinearGradient>
+              <View style={styles.profileImagePlaceholder}>
+                <Text style={styles.profileImagePlaceholderText}>{getInitials()}</Text>
+              </View>
             )}
-          </Animated.View>
+          </View>
         </View>
-    
-        {/* Rest of the component remains the same */}
+
         <View style={styles.nameContainer}>
           {isEditing ? (
             <View style={styles.editNameContainer}>
               <TextInput
                 style={styles.nameInput}
                 value={editData.firstName}
-                onChangeText={(text) => onEditChange('firstName', text)}
+                onChangeText={(text) => onEditChange("firstName", text)}
                 placeholder="First Name"
-                placeholderTextColor={COLORS.textPlaceholder}
+                placeholderTextColor="#9CA3AF"
               />
               <TextInput
                 style={styles.nameInput}
                 value={editData.lastName}
-                onChangeText={(text) => onEditChange('lastName', text)}
+                onChangeText={(text) => onEditChange("lastName", text)}
                 placeholder="Last Name"
-                placeholderTextColor={COLORS.textPlaceholder}
+                placeholderTextColor="#9CA3AF"
               />
             </View>
           ) : (
             <Text style={styles.nameText}>
-              {userData.firstName || userData.lastName 
+              {userData.firstName || userData.lastName
                 ? `${userData.firstName} ${userData.lastName}`.trim()
                 : userData.username}
             </Text>
           )}
-          
-          {!isEditing && userData.email && (
-            <Text style={styles.emailText}>{userData.email}</Text>
-          )}
+
+          {!isEditing && userData.email && <Text style={styles.emailText}>{userData.email}</Text>}
         </View>
       </View>
 
-      {/* Rest of the component remains the same */}
       <View style={styles.bioContainer}>
+        <View style={styles.bioHeader}>
+          <MaterialIcons name="description" size={18} color="#6B7280" />
+          <Text style={styles.bioLabel}>Bio</Text>
+        </View>
         {isEditing ? (
           <View style={styles.bioInputContainer}>
             <TextInput
               style={styles.bioInput}
               value={editData.bio}
-              onChangeText={(text) => onEditChange('bio', text)}
+              onChangeText={(text) => onEditChange("bio", text)}
               placeholder="Write a short bio about yourself or your major..."
-              placeholderTextColor={COLORS.textPlaceholder}
+              placeholderTextColor="#9CA3AF"
               multiline
               numberOfLines={3}
             />
@@ -109,124 +123,131 @@ const ProfileHeader = ({ userData, editData, isEditing, onEditChange }: ProfileH
           </View>
         )}
       </View>
-    </View>
-  );
-};
+    </Animated.View>
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
-    position: 'relative',
-    marginBottom: SPACING.md,
-  },
-  headerBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 200,
-    borderBottomLeftRadius: BORDER_RADIUS.xl,
-    borderBottomRightRadius: BORDER_RADIUS.xl,
+    marginBottom: 0,
+    backgroundColor: "#3A63ED",
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    paddingTop: 16,
   },
   profileHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: SPACING.xl,
-    paddingHorizontal: SPACING.md,
-    paddingBottom: SPACING.md,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+    paddingTop: 8,
   },
   profileImageContainer: {
-    marginRight: SPACING.md,
+    marginRight: 16,
   },
   profileImageWrapper: {
-    width: BORDER_RADIUS.circle * 2,
-    height: BORDER_RADIUS.circle * 2,
-    borderRadius: BORDER_RADIUS.circle,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     padding: 3,
-    backgroundColor: COLORS.background,
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    borderWidth: 3,
+    borderColor: "rgba(255, 255, 255, 0.3)",
   },
   profileImagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    borderRadius: BORDER_RADIUS.circle,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: "100%",
+    height: "100%",
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#2A53DD",
   },
   profileImagePlaceholderText: {
-    color: 'white',
-    fontSize: FONT_SIZE.xl,
-    fontWeight: 'bold',
+    color: "white",
+    fontSize: 36,
+    fontWeight: "bold",
+  },
+  profileImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 50,
   },
   nameContainer: {
     flex: 1,
   },
   nameText: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: SPACING.xs,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "white",
+    marginBottom: 4,
   },
   emailText: {
-    fontSize: FONT_SIZE.sm,
-    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 14,
+    color: "rgba(255, 255, 255, 0.8)",
   },
   editNameContainer: {
-    flexDirection: 'row',
-    marginBottom: SPACING.sm,
-    gap: SPACING.xs,
+    gap: 8,
   },
   nameInput: {
-    flex: 1,
-    fontSize: FONT_SIZE.md,
+    fontSize: 16,
     borderWidth: 1,
-    borderColor: COLORS.borderInput,
-    borderRadius: BORDER_RADIUS.sm,
-    padding: SPACING.sm,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    ...SHADOWS.small,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+    borderRadius: 8,
+    padding: 8,
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    color: "#111827",
   },
   bioContainer: {
-    marginTop: SPACING.sm,
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 16,
+    backgroundColor: "#F9FAFB",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    marginTop: 0,
+  },
+  bioHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  bioLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#4B5563",
+    marginLeft: 8,
   },
   bioInputContainer: {
-    backgroundColor: COLORS.background,
-    borderRadius: BORDER_RADIUS.md,
-    ...SHADOWS.small,
+    backgroundColor: "white",
+    borderRadius: 12,
   },
   bioInput: {
-    fontSize: FONT_SIZE.md,
+    fontSize: 16,
     borderWidth: 1,
-    borderColor: COLORS.borderInput,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    padding: 12,
     minHeight: 80,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
+    backgroundColor: "white",
   },
   bioTextContainer: {
-    backgroundColor: COLORS.background,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 12,
     minHeight: 60,
-    ...SHADOWS.small,
   },
   bioText: {
-    fontSize: FONT_SIZE.md,
-    color: COLORS.textSecondary,
+    fontSize: 16,
+    color: "#4B5563",
+    lineHeight: 22,
   },
   emptyBioText: {
-    fontSize: FONT_SIZE.md,
-    color: COLORS.textPlaceholder,
-    fontStyle: 'italic',
-    textAlign: 'center',
+    fontSize: 16,
+    color: "#9CA3AF",
+    fontStyle: "italic",
+    textAlign: "center",
   },
-  profileImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: BORDER_RADIUS.circle,
-  },
-});
+})
 
-export default ProfileHeader;
+export default ProfileHeader

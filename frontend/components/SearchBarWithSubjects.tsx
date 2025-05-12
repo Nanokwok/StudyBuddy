@@ -77,7 +77,8 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     padding: 16,
-    backgroundColor: 'white',
+    overflow: 'visible',
+    backgroundColor: '#F9FAFB',
   },
   searchContainer: {
     width: '100%',
@@ -104,12 +105,12 @@ const styles = StyleSheet.create({
   subjectsContainer: {
     gap: 8,
     paddingVertical: 4,
+    overflow: 'visible',
   },
   subjectChip: {
-    minHeight: 28,
+    minHeight: 20,
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: 'white',
+    paddingVertical: 4,
     borderRadius: 32,
     borderWidth: 0.5,
     borderColor: 'rgba(0, 0, 0, 0.1)',
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(37, 99, 235, 0.1)',
   },
   subjectText: {
-    fontSize: 16,
+    fontSize: 13,
   },
   selectedSubjectText: {
     color: '#2563eb',

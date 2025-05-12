@@ -1,126 +1,205 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, StatusBar } from 'react-native';
-import { ThemedView } from '@/components/ThemedView';
-import { ThemedText } from '@/components/ThemedText';
-import SearchBarWithSubjects from '@/components/SearchBarWithSubjects';
-import AddFriendBox from '@/components/AddFriends/AddFriendBox';
-import api from '../../core/api';
+"use client"
+
+import React, { useEffect, useState, useRef } from "react"
+import { StyleSheet, StatusBar, Animated, RefreshControl } from "react-native"
+import { ThemedView } from "@/components/ThemedView"
+import { ThemedText } from "@/components/ThemedText"
+import SearchBarWithSubjects from "@/components/SearchBarWithSubjects"
+import AddFriendBox from "@/components/AddFriends/AddFriendBox"
+import AddFriendSkeletonLoader from "@/components/AddFriends/AddFriendSkeletonLoader"
+import EmptyAddFriendsState from "@/components/AddFriends/EmptyAddFriendsState"
+import api from "@/core/api"
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context"
 
 type AddableUser = {
-  id: string;
-  name: string;
-  bio: string | null;
-  avatarUrl: string;
-  tags: string[];
-};
+  id: string
+  name: string
+  bio: string | null
+  avatarUrl: string
+  tags: string[]
+}
 
 const AddFriendsPage = () => {
-  const [searchText, setSearchText] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
-  const [users, setUsers] = useState<AddableUser[]>([]);
-  const [error, setError] = useState('');
+  const [searchText, setSearchText] = useState("")
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null)
+  const [users, setUsers] = useState<AddableUser[]>([])
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [error, setError] = useState("")
+  const scrollY = useRef(new Animated.Value(0)).current
 
-  const fetchAddableUsers = async () => {
+  const fetchAddableUsers = async (showLoading = true) => {
+    if (showLoading) setLoading(true)
     try {
-      const response = await api.get('friendships/addable-users/');
+      // Simulate a delay to show loading state (remove in production)
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      const response = await api.get("friendships/addable-users/")
       const safeUsers = response.data.map((user: any) => ({
-        id: user.id || '',
-        name: user.name || 'Unknown User',
-        bio: user.bio || 'No major info',
-        avatarUrl: user.profile_picture_url || '',
-        tags: Array.isArray(user.tags) ? user.tags : []
-      }));
-      setUsers(safeUsers);
+        id: user.id || "",
+        name: user.name || "Unknown User",
+        bio: user.bio || "No major info",
+        avatarUrl: user.profile_picture_url || "https://placehold.co/100x100/EEF6FF/3A63ED?text=👤",
+        tags: Array.isArray(user.tags) ? user.tags : [],
+      }))
+      setUsers(safeUsers)
+      setError("")
     } catch (err) {
-      console.error('Failed to fetch addable users', err);
-      setError('Failed to load users');
+      console.error("Failed to fetch addable users", err)
+      setError("Failed to load users")
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
     }
-  };
+  }
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true)
+    fetchAddableUsers(false)
+  }, [])
 
   useEffect(() => {
-    fetchAddableUsers();
-  }, []);
+    fetchAddableUsers()
+  }, [])
 
   const handleAddFriend = async (id: string) => {
     try {
-      await api.post(`friendships/${id}/request/`);
-      setUsers(prev => prev.filter(user => user.id !== id));
+      await api.post(`friendships/${id}/request/`)
+      setUsers((prev) => prev.filter((user) => user.id !== id))
     } catch (err) {
-      console.error('Failed to send request', err);
+      console.error("Failed to send request", err)
     }
-  };
+  }
 
   const handleSearchChange = (text: string) => {
-    setSearchText(text);
+    setSearchText(text)
     if (selectedSubject && !text.includes(selectedSubject)) {
-      setSelectedSubject(null);
+      setSelectedSubject(null)
     }
-  };
+  }
 
   const handleSubjectSelect = (subject: string) => {
-    const newSubject = selectedSubject === subject ? null : subject;
-    setSelectedSubject(newSubject);
-    setSearchText(newSubject || '');
-  };
+    const newSubject = selectedSubject === subject ? null : subject
+    setSelectedSubject(newSubject)
+    setSearchText(newSubject || "")
+  }
 
-  const filteredUsers = users.filter(user => {
-    const name = user.name || '';
-    const bio = user.bio || '';
-    const tags = user.tags || [];
-    
+  const filteredUsers = users.filter((user) => {
+    const name = user.name || ""
+    const bio = user.bio || ""
+    const tags = user.tags || []
+
     const matchText =
-      name.toLowerCase().includes(searchText.toLowerCase()) ||
-      bio.toLowerCase().includes(searchText.toLowerCase());
+      name.toLowerCase().includes(searchText.toLowerCase()) || bio.toLowerCase().includes(searchText.toLowerCase())
 
-    const matchTag =
-      !selectedSubject || tags.includes(selectedSubject);
+    const matchTag = !selectedSubject || tags.includes(selectedSubject)
 
-    return matchText && matchTag;
-  });
+    return matchText && matchTag
+  })
 
   return (
-    <ThemedView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+    <SafeAreaProvider>
+      <StatusBar backgroundColor="#3A63ED" barStyle="light-content" />
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#3A63ED" }} edges={["top"]}>
+        <ThemedView style={styles.container}>
+          {/* Header */}
+          <Animated.View style={[styles.header]}>
+            <ThemedText style={styles.greeting}>Find New Friends</ThemedText>
+            <ThemedText style={styles.welcomeText}>Connect with classmates</ThemedText>
+          </Animated.View>
 
-      <ThemedView style={styles.header}>
-        <ThemedText type="title" style={styles.title}>Find New Friends!</ThemedText>
-      </ThemedView>
-
-      <SearchBarWithSubjects 
-        searchText={searchText}
-        onSearchChange={handleSearchChange}
-        onSubjectPress={handleSubjectSelect}
-        selectedSubject={selectedSubject}
-      />
-
-      <ScrollView style={styles.friendsList}>
-        {filteredUsers.length > 0 ? (
-          filteredUsers.map((user) => (
-          <AddFriendBox
-            key={user.id}
-            request={{
-              ...user,
-              bio: user.bio || '',
-            }}
-            onAdd={() => handleAddFriend(user.id)}
+          {/* Search Bar */}
+          <SearchBarWithSubjects
+            searchText={searchText}
+            onSearchChange={handleSearchChange}
+            onSubjectPress={handleSubjectSelect}
+            selectedSubject={selectedSubject}
           />
-          ))
-        ) : (
-          <ThemedView style={styles.emptyState}>
-            <ThemedText>No users found</ThemedText>
-          </ThemedView>
-        )}
-      </ScrollView>
-    </ThemedView>
-  );
-};
+
+          {/* Users List */}
+          <Animated.ScrollView
+            style={styles.usersList}
+            contentContainerStyle={styles.usersListContent}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3A63ED" colors={["#3A63ED"]} />
+            }
+            onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+              useNativeDriver: false,
+            })}
+            scrollEventThrottle={16}
+          >
+            {loading && !refreshing ? (
+              <AddFriendSkeletonLoader />
+            ) : filteredUsers.length > 0 ? (
+              filteredUsers.map((user, index) => (
+                <AddFriendBox
+                  key={user.id}
+                  request={{
+                    ...user,
+                    bio: user.bio || "",
+                  }}
+                  onAdd={() => handleAddFriend(user.id)}
+                  index={index}
+                />
+              ))
+            ) : (
+              <EmptyAddFriendsState
+                title={error ? "Couldn't Load Users" : "No Users Found"}
+                message={
+                  error
+                    ? "There was a problem loading users. Pull down to try again."
+                    : searchText
+                      ? "Try adjusting your search or filters"
+                      : "We couldn't find any users to add as friends."
+                }
+                icon={error ? "error-outline" : "search-off"}
+                action={
+                  error
+                    ? {
+                        label: "Try Again",
+                        onPress: () => fetchAddableUsers(),
+                      }
+                    : undefined
+                }
+              />
+            )}
+          </Animated.ScrollView>
+        </ThemedView>
+      </SafeAreaView>
+    </SafeAreaProvider>
+  )
+}
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'white' },
-  header: { paddingHorizontal: 16, paddingTop: 78, paddingBottom: 8 },
-  title: { fontSize: 25 },
-  friendsList: { flex: 1 },
-  emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 40 },
-});
+  container: {
+    flex: 1,
+    backgroundColor: "#F9FAFB",
+    paddingBottom: 50,
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    backgroundColor: "#3A63ED",
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+  greeting: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "white",
+    marginBottom: 4,
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: "rgba(255, 255, 255, 0.9)",
+  },
+  usersList: {
+    flex: 1,
+  },
+  usersListContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 40,
+  },
+})
 
-export default AddFriendsPage;
+export default AddFriendsPage

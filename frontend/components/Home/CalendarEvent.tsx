@@ -1,41 +1,51 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { MaterialIcons } from '@expo/vector-icons';
+import type React from "react"
+import { View, StyleSheet, TouchableOpacity } from "react-native"
+import { ThemedText } from "@/components/ThemedText"
+import { ThemedView } from "@/components/ThemedView"
+import { MaterialIcons } from "@expo/vector-icons"
 
 interface CalendarEventProps {
-  title: string;
-  date: string;
-  time: string;
+  title: string
+  date: string
+  time: string
+  onPress?: () => void
 }
 
-const CalendarEvent: React.FC<CalendarEventProps> = ({ title, date, time }) => {
+const CalendarEvent: React.FC<CalendarEventProps> = ({ title, date, time, onPress }) => {
   return (
-    <ThemedView style={styles.cardContainer}>
-      <View style={styles.container}>
-        <View style={styles.innerContainer}>
-          <ThemedText type="subtitle">{title}</ThemedText>
-          <View style={styles.detailsContainer}>
-            <View style={styles.row}>
-              <MaterialIcons name="calendar-today" size={16} color="#666" />
-              <ThemedText type="default" style={styles.text}>{date}</ThemedText>
-            </View>
-            <View style={styles.row}>
-              <MaterialIcons name="access-time" size={16} color="#666" />
-              <ThemedText type="default" style={styles.text}>{time}</ThemedText>
+    <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
+      <ThemedView style={styles.cardContainer}>
+        <View style={styles.leftAccent} />
+        <View style={styles.container}>
+          <View style={styles.innerContainer}>
+            <ThemedText type="subtitle" style={styles.title}>
+              {title}
+            </ThemedText>
+            <View style={styles.detailsContainer}>
+              <View style={styles.row}>
+                <MaterialIcons name="calendar-today" size={16} color="#3A63ED" />
+                <ThemedText type="default" style={styles.text}>
+                  {date}
+                </ThemedText>
+              </View>
+              <View style={styles.row}>
+                <MaterialIcons name="access-time" size={16} color="#3A63ED" />
+                <ThemedText type="default" style={styles.text}>
+                  {time}
+                </ThemedText>
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </ThemedView>
-  );
-};
+      </ThemedView>
+    </TouchableOpacity>
+  )
+}
 
 const styles = StyleSheet.create({
   cardContainer: {
     borderRadius: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -43,28 +53,46 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    marginBottom: 8,
+    marginBottom: 12,
+    flexDirection: "row",
+    overflow: "hidden",
+    backgroundColor: "white",
+  },
+  leftAccent: {
+    width: 6,
+    backgroundColor: "#3A63ED",
   },
   container: {
+    flex: 1,
     padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   innerContainer: {
+    flex: 1,
     gap: 8,
   },
+  title: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+  },
   detailsContainer: {
-    gap: 3,
+    gap: 6,
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   text: {
-    marginLeft: 4,
+    color: "#4B5563",
+    fontSize: 14,
   },
-});
+  chevron: {
+    marginLeft: 8,
+  },
+})
 
-export default CalendarEvent;
+export default CalendarEvent

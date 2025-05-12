@@ -1,122 +1,147 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
+"use client"
+
+import type React from "react"
+import { useRef, useEffect } from "react"
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from "react-native"
+import { MaterialIcons } from "@expo/vector-icons"
 
 interface FriendsSectionProps {
-  friendCount: number;
-  onViewFriends: () => void;
+  friendCount: number
+  onViewFriends: () => void
 }
 
-const FriendsSection = ({ friendCount, onViewFriends }: FriendsSectionProps) => {
+const FriendsSection: React.FC<FriendsSectionProps> = ({ friendCount, onViewFriends }) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current
+  const scaleAnim = useRef(new Animated.Value(0.95)).current
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 600,
+      delay: 200,
+      useNativeDriver: true,
+    }).start()
+
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 8,
+      tension: 40,
+      useNativeDriver: true,
+    }).start()
+  }, [])
+
   return (
-    <View style={styles.section}>
+    <Animated.View
+      style={[
+        styles.section,
+        {
+          opacity: fadeAnim,
+          transform: [{ scale: scaleAnim }],
+        },
+      ]}
+    >
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Friends</Text>
-        <MaterialIcons name="people" size={20} color={COLORS.textSecondary} />
+        <View style={styles.headerLeft}>
+          <MaterialIcons name="people" size={20} color="#3A63ED" />
+          <Text style={styles.sectionTitle}>Friends</Text>
+        </View>
       </View>
-      
+
       <View style={styles.friendsContent}>
         <View style={styles.friendCountContainer}>
-          <LinearGradient
-            colors={[COLORS.primaryGradientStart, COLORS.primaryGradientEnd]}
-            style={styles.friendCountCircle}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
+          <View style={styles.friendCountCircle}>
             <Text style={styles.friendCountNumber}>{friendCount}</Text>
-          </LinearGradient>
+          </View>
           <Text style={styles.friendCountLabel}>Friends</Text>
         </View>
-        
-        <TouchableOpacity 
-          style={styles.viewFriendsButton}
-          onPress={onViewFriends}
-        >
-          <LinearGradient
-            colors={['rgba(37, 99, 235, 0.1)', 'rgba(37, 99, 235, 0.2)']}
-            style={styles.buttonGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
+
+        <TouchableOpacity style={styles.viewFriendsButton} onPress={onViewFriends} activeOpacity={0.8}>
+          <View style={styles.buttonContent}>
             <Text style={styles.viewFriendsButtonText}>View All Friends</Text>
-            <MaterialIcons name="arrow-forward" size={16} color={COLORS.primary} />
-          </LinearGradient>
+            <MaterialIcons name="arrow-forward" size={16} color="#3A63ED" />
+          </View>
         </TouchableOpacity>
       </View>
-    </View>
-  );
-};
+    </Animated.View>
+  )
+}
 
+// Update the styles object with improved styling
 const styles = StyleSheet.create({
   section: {
-    margin: SPACING.md,
-    marginBottom: SPACING.lg,
-    backgroundColor: COLORS.card,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
-    ...SHADOWS.medium,
+    margin: 16,
+    marginBottom: 24,
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 16,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-    paddingBottom: SPACING.sm,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+    paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: "#F3F4F6",
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   sectionTitle: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: 'bold',
-    color: COLORS.textPrimary,
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#111827",
+    marginLeft: 8,
   },
   friendsContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: SPACING.md,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 8,
   },
   friendCountContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   friendCountCircle: {
     width: 70,
     height: 70,
     borderRadius: 35,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: SPACING.xs,
-    ...SHADOWS.small,
+    backgroundColor: "#3A63ED",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+    borderWidth: 3,
+    borderColor: "rgba(58, 99, 237, 0.2)",
   },
   friendCountNumber: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: 'bold',
-    color: 'white',
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "white",
   },
   friendCountLabel: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "500",
   },
   viewFriendsButton: {
-    borderRadius: BORDER_RADIUS.lg,
-    overflow: 'hidden',
-    ...SHADOWS.small,
+    backgroundColor: "#EEF6FF",
+    borderRadius: 12,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(58, 99, 237, 0.1)",
   },
-  buttonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    borderRadius: BORDER_RADIUS.lg,
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   viewFriendsButtonText: {
-    color: COLORS.primary,
-    fontWeight: '600',
-    marginRight: SPACING.xs,
+    color: "#3A63ED",
+    fontWeight: "600",
+    marginRight: 4,
   },
-});
+})
 
-export default FriendsSection;
+export default FriendsSection

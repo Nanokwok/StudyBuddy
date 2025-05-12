@@ -1,44 +1,60 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialIcons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
+"use client"
+
+import type React from "react"
+import { useRef, useEffect } from "react"
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, Animated } from "react-native"
+import { MaterialIcons } from "@expo/vector-icons"
 
 interface ActionButtonsProps {
-  isEditing: boolean;
-  isSaving: boolean;
-  onEdit: () => void;
-  onSave: () => void;
-  onCancel: () => void;
+  isEditing: boolean
+  isSaving: boolean
+  onEdit: () => void
+  onSave: () => void
+  onCancel: () => void
 }
 
-const ActionButtons = ({ isEditing, isSaving, onEdit, onSave, onCancel }: ActionButtonsProps) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({ isEditing, isSaving, onEdit, onSave, onCancel }) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current
+  const scaleAnim = useRef(new Animated.Value(0.9)).current
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        delay: 400,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start()
+  }, [])
+
   return (
-    <View style={styles.actionButtonsContainer}>
+    <Animated.View
+      style={[
+        styles.actionButtonsContainer,
+        {
+          opacity: fadeAnim,
+          transform: [{ scale: scaleAnim }],
+        },
+      ]}
+    >
       {isEditing ? (
         <>
-          <TouchableOpacity 
-            style={styles.actionButtonWrapper} 
-            onPress={onCancel}
-            disabled={isSaving}
-          >
+          <TouchableOpacity style={styles.actionButtonWrapper} onPress={onCancel} disabled={isSaving}>
             <View style={[styles.actionButton, styles.cancelButton]}>
-              <MaterialIcons name="close" size={20} color="rgba(0, 0, 0, 0.7)" />
+              <MaterialIcons name="close" size={20} color="#6B7280" />
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </View>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.actionButtonWrapper} 
-            onPress={onSave}
-            disabled={isSaving}
-          >
-            <LinearGradient
-              colors={[COLORS.primaryGradientStart, COLORS.primaryGradientEnd]}
-              style={[styles.actionButton, styles.saveButton]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
+
+          <TouchableOpacity style={styles.actionButtonWrapper} onPress={onSave} disabled={isSaving}>
+            <View style={[styles.actionButton, styles.saveButton]}>
               {isSaving ? (
                 <ActivityIndicator size="small" color="white" />
               ) : (
@@ -47,76 +63,75 @@ const ActionButtons = ({ isEditing, isSaving, onEdit, onSave, onCancel }: Action
                   <Text style={styles.saveButtonText}>Save</Text>
                 </>
               )}
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
         </>
       ) : (
-        <TouchableOpacity 
-          style={styles.actionButtonWrapper} 
-          onPress={onEdit}
-        >
-          <LinearGradient
-            colors={[COLORS.primaryGradientStart, COLORS.primaryGradientEnd]}
-            style={[styles.actionButton, styles.editButton]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
+        <TouchableOpacity style={styles.actionButtonWrapper} onPress={onEdit}>
+          <View style={[styles.actionButton, styles.editButton]}>
             <MaterialIcons name="edit" size={20} color="white" />
             <Text style={styles.editButtonText}>Edit Profile</Text>
-          </LinearGradient>
+          </View>
         </TouchableOpacity>
       )}
-    </View>
-  );
-};
+    </Animated.View>
+  )
+}
 
 const styles = StyleSheet.create({
   actionButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    padding: SPACING.md,
-    gap: SPACING.md,
+    alignItems: "center",
+    marginTop: 16,
+    paddingHorizontal: 16,
   },
   actionButtonWrapper: {
-    borderRadius: BORDER_RADIUS.xl,
-    overflow: 'hidden',
-    ...SHADOWS.medium,
+    borderRadius: 12,
+    overflow: "hidden",
   },
   actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.xl,
-    minWidth: 140,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    minWidth: 200,
   },
   editButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: "#3A63ED",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(58, 99, 237, 0.2)",
   },
   editButtonText: {
-    color: 'white',
-    fontSize: FONT_SIZE.md,
-    fontWeight: 'bold',
-    marginLeft: SPACING.xs,
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
   },
   saveButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: "#3A63ED",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(58, 99, 237, 0.2)",
   },
   saveButtonText: {
-    color: 'white',
-    fontSize: FONT_SIZE.md,
-    fontWeight: 'bold',
-    marginLeft: SPACING.xs,
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
   },
   cancelButton: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   cancelButtonText: {
-    color: 'rgba(0, 0, 0, 0.7)',
-    fontSize: FONT_SIZE.md,
-    fontWeight: 'bold',
-    marginLeft: SPACING.xs,
+    color: "#6B7280",
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
   },
-});
+})
 
-export default ActionButtons;
+export default ActionButtons

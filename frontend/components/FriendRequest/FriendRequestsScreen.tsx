@@ -1,75 +1,77 @@
-import React from 'react';
-import { StatusBar, StyleSheet } from 'react-native';
-import { ThemedView } from '@/components/ThemedView';
-import { ThemedText } from '@/components/ThemedText';
-import FriendRequestList from './FriendRequestList';
-import { FriendRequest } from './types';
+"use client"
 
-interface FriendRequestsScreenProps {
-  requests: FriendRequest[];
-  onAccept: (id: string) => void;
-  onDecline: (id: string) => void;
-  loading?: boolean;
-  error?: string | null;
-}
+import type React from "react"
+import { useRef } from "react"
+import { StatusBar, StyleSheet, Animated } from "react-native"
+import { ThemedView } from "@/components/ThemedView"
+import { ThemedText } from "@/components/ThemedText"
+import FriendRequestList from "./FriendRequestList"
+import FriendRequestSkeletonLoader from "./FriendRequestSkeletonLoader"
+import type { FriendRequestsScreenProps } from "./types"
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context"
 
 const FriendRequestsScreen: React.FC<FriendRequestsScreenProps> = ({
   requests,
   onAccept,
   onDecline,
   loading,
-  error,
+  refreshing,
+  onRefresh,
 }) => {
-  if (loading) {
-    return (
-      <ThemedView style={styles.container}>
-        <ThemedText>Loading...</ThemedText>
-      </ThemedView>
-    );
-  }
+  const scrollY = useRef(new Animated.Value(0)).current
 
   return (
-    <ThemedView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-      
-      {/* Header Section */}
-      <ThemedView style={styles.headerSection}>
-        <ThemedView style={styles.headerContainer}>
-          <ThemedView style={styles.headerTextContainer}>
-            <ThemedText type="title">Friend Requests</ThemedText>
-          </ThemedView>
-        </ThemedView>
-      </ThemedView>
+    <SafeAreaProvider>
+      <StatusBar backgroundColor="#3A63ED" barStyle="light-content" />
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#3A63ED" }} edges={["top"]}>
+        <ThemedView style={styles.container}>
+          {/* Header */}
+          <Animated.View style={[styles.header]}>
+            <ThemedText style={styles.greeting}>Friend Requests</ThemedText>
+            <ThemedText style={styles.welcomeText}>Manage your connection requests</ThemedText>
+          </Animated.View>
 
-      <FriendRequestList
-        requests={requests}
-        onAccept={onAccept}
-        onDecline={onDecline}
-      />
-    </ThemedView>
-  );
-};
+          {loading && !refreshing ? (
+            <FriendRequestSkeletonLoader />
+          ) : (
+            <FriendRequestList
+              requests={requests}
+              onAccept={onAccept}
+              onDecline={onDecline}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
+          )}
+        </ThemedView>
+      </SafeAreaView>
+    </SafeAreaProvider>
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 70,
+    backgroundColor: "#F9FAFB",
+    paddingBottom: 50,
   },
-  headerSection: {
-    width: '100%',
+  header: {
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    backgroundColor: "#3A63ED",
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
     marginBottom: 16,
-    paddingHorizontal: 16,
   },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    marginBottom: 8,
+  greeting: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "white",
+    marginBottom: 4,
   },
-  headerTextContainer: {
-    flex: 1,
+  welcomeText: {
+    fontSize: 16,
+    color: "rgba(255, 255, 255, 0.9)",
   },
-});
+})
 
-export default FriendRequestsScreen;
+export default FriendRequestsScreen
