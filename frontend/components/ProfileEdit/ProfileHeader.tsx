@@ -2,18 +2,26 @@
 
 import type React from "react"
 import { useRef, useEffect } from "react"
-import { View, Text, TextInput, StyleSheet, Animated, Image } from "react-native"
+import { View, Text, TextInput, StyleSheet, Animated } from "react-native"
 import type { UserData } from "@/types"
 import { MaterialIcons } from "@expo/vector-icons"
+import ProfilePictureEditor from "./ProfilePictureEditor"
 
 interface ProfileHeaderProps {
   userData: UserData
   editData: UserData
   isEditing: boolean
   onEditChange: (field: string, value: string) => void
+  onProfilePictureUpdate: (url: string) => void
 }
 
-const ProfileHeader: React.FC<ProfileHeaderProps> = ({ userData, editData, isEditing, onEditChange }) => {
+const ProfileHeader: React.FC<ProfileHeaderProps> = ({ 
+  userData, 
+  editData, 
+  isEditing, 
+  onEditChange,
+  onProfilePictureUpdate
+}) => {
   const fadeAnim = useRef(new Animated.Value(0)).current
   const scaleAnim = useRef(new Animated.Value(0.95)).current
 
@@ -33,16 +41,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ userData, editData, isEdi
     ]).start()
   }, [])
 
-  const getInitials = () => {
-    const first = userData.firstName ? userData.firstName.charAt(0) : ""
-    const last = userData.lastName
-      ? userData.lastName.charAt(0)
-      : userData.username
-        ? userData.username.charAt(0).toUpperCase()
-        : "U"
-    return first + last
-  }
-
   return (
     <Animated.View
       style={[
@@ -55,15 +53,12 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ userData, editData, isEdi
     >
       <View style={styles.profileHeader}>
         <View style={styles.profileImageContainer}>
-          <View style={styles.profileImageWrapper}>
-            {userData.profilePictureUrl ? (
-              <Image source={{ uri: userData.profilePictureUrl }} style={styles.profileImage} resizeMode="cover" />
-            ) : (
-              <View style={styles.profileImagePlaceholder}>
-                <Text style={styles.profileImagePlaceholderText}>{getInitials()}</Text>
-              </View>
-            )}
-          </View>
+        <ProfilePictureEditor
+          currentImageUrl={userData.profilePictureUrl ?? null}
+          onImageUpdated={onProfilePictureUpdate}
+          isEditing={isEditing}
+          username={userData.username}
+        />
         </View>
 
         <View style={styles.nameContainer}>
@@ -144,33 +139,6 @@ const styles = StyleSheet.create({
   },
   profileImageContainer: {
     marginRight: 16,
-  },
-  profileImageWrapper: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    padding: 3,
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
-    borderWidth: 3,
-    borderColor: "rgba(255, 255, 255, 0.3)",
-  },
-  profileImagePlaceholder: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 50,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#2A53DD",
-  },
-  profileImagePlaceholderText: {
-    color: "white",
-    fontSize: 36,
-    fontWeight: "bold",
-  },
-  profileImage: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 50,
   },
   nameContainer: {
     flex: 1,

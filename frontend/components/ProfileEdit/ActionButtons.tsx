@@ -80,9 +80,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ isEditing, isSaving, onEd
 
 const styles = StyleSheet.create({
   actionButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
-    marginTop: 16,
     paddingHorizontal: 16,
+    gap: 16,
   },
   actionButtonWrapper: {
     borderRadius: 12,
@@ -94,7 +96,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 12,
     paddingHorizontal: 24,
-    minWidth: 200,
+    minWidth: 150,
   },
   editButton: {
     backgroundColor: "#3A63ED",

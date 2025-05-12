@@ -192,6 +192,9 @@ export default function ProfileEditScreen() {
     setEditData((prev) => ({
       ...prev,
       [field]: value,
+      bio: field === "bio" ? value : prev.bio,
+      firstName: field === "firstName" ? value : prev.firstName,
+      lastName: field === "lastName" ? value : prev.lastName,
     }))
   }
 
@@ -203,6 +206,23 @@ export default function ProfileEditScreen() {
         [platform]: platform === "instagram" ? value.replace("@", "") : value,
       },
     }))
+  }
+
+  const handleCoursesUpdated = (updatedCourses: any[]) => {
+    setEditData((prev) => ({
+      ...prev,
+      courses: updatedCourses,
+    }))
+
+    setUserData((prev) => ({
+      ...prev,
+      courses: updatedCourses,
+    }))
+  }
+
+  const handleProfilePictureUpdate = (url: string) => {
+    setUserData(prev => ({ ...prev, profilePictureUrl: url }))
+    setEditData(prev => ({ ...prev, profilePictureUrl: url }))
   }
 
   return (
@@ -254,8 +274,13 @@ export default function ProfileEditScreen() {
                   editData={editData}
                   isEditing={isEditing}
                   onEditChange={handleEditChange}
+                  onProfilePictureUpdate={handleProfilePictureUpdate}
                 />
-                <CoursesSection courses={userData.courses} />
+                <CoursesSection 
+                  courses={userData.courses} 
+                  isEditing={isEditing}
+                  onCoursesUpdated={handleCoursesUpdated}
+                />
                 <FriendsSection
                   friendCount={userData.friendships.count}
                   onViewFriends={() => router.push("/friends")}
@@ -293,7 +318,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F9FAFB",
-    paddingBottom: 40,
+    paddingBottom: 80,
   },
   loadingContainer: {
     flex: 1,

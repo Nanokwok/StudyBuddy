@@ -18,13 +18,13 @@ const SearchBarWithSubjects: React.FC<SearchBarWithSubjectsProps> = ({
   selectedSubject,
 }) => {
   const subjects = [
-    'Mathematics',
-    'Physics',
-    'Chemistry',
-    'Biology',
-    'Computer Science',
+    'Calculus I',
+    'Weight Training',
+    'English for Careers',
+    'Man and Sea',
+    'Digital',
     'Economics',
-    'History'
+    'Knowledge Of The Land'
   ];
 
   return (

@@ -19,7 +19,6 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', CreateUserView.as_view(), name='user-register'),
     path('api-auth/', include('rest_framework.urls')),
-    path('users/me/', UserViewSet.as_view({'get': 'me', 'patch': 'partial_update'}), name='user-me'),
     path('users/me/upload_profile_picture/', UserViewSet.as_view({'post': 'upload_profile_picture'}), name='user-profile-picture'),
     path('friendships/unfriend/', FriendshipViewSet.as_view({'post': 'unfriend'}), name='friendship-unfriend'),
 ]

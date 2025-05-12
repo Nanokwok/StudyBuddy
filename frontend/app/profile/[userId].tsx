@@ -1,7 +1,16 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from "react"
-import { View, Image, StyleSheet, TouchableOpacity, Linking, Alert, Animated, RefreshControl } from "react-native"
+import {
+  View,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Linking,
+  Alert,
+  Animated,
+  RefreshControl,
+} from "react-native"
 import { ThemedView } from "@/components/ThemedView"
 import { ThemedText } from "@/components/ThemedText"
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons"
@@ -38,23 +47,17 @@ export default function Profile() {
     try {
       if (showLoading) setLoading(true)
       setError(null)
-
-      // Simulate a delay to show loading state (remove in production)
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      // Fetch user basic info
       const userRes = await api.get(`/users/${userId}/`)
       const userData = userRes.data
 
-      // Fetch user courses
       const coursesRes = await api.get(`/users/${userId}/courses/`)
       const tags = coursesRes.data.map((c: any) => c.course.subject)
 
-      // Fetch social links
       const socialRes = await api.get(`/users/${userId}/social_links/`)
       const socialLinks = socialRes.data
 
-      // Extract social media usernames
       const instagramLink = socialLinks.find((link: any) => link.platform.toLowerCase() === "instagram")
       const facebookLink = socialLinks.find((link: any) => link.platform.toLowerCase() === "facebook")
 
@@ -118,10 +121,7 @@ export default function Profile() {
   const handleUnfriend = async () => {
     try {
       Alert.alert("Unfriend", `Are you sure you want to unfriend ${user?.name}?`, [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
+        { text: "Cancel", style: "cancel" },
         {
           text: "Unfriend",
           style: "destructive",
@@ -161,19 +161,16 @@ export default function Profile() {
     <SafeAreaProvider>
       <SafeAreaView style={{ flex: 1, backgroundColor: "#3A63ED" }} edges={["top"]}>
         <ThemedView style={styles.container}>
-          {/* Animated Header */}
+          {/* 🔙 Fixed Back Button */}
+          <TouchableOpacity style={styles.fixedBackButton} onPress={() => router.back()}>
+            <MaterialIcons name="arrow-back" size={28} color="#3A63ED" />
+          </TouchableOpacity>
+
+          {/* 🔵 Animated Header */}
           <Animated.View
-            style={[
-              styles.animatedHeader,
-              {
-                opacity: headerOpacity,
-                height: headerHeight,
-              },
-            ]}
+            style={[styles.animatedHeader, { opacity: headerOpacity, height: headerHeight }]}
           >
-            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-              <MaterialIcons name="arrow-back" size={24} color="white" />
-            </TouchableOpacity>
+            <View style={styles.backButton} />
             <ThemedText style={styles.headerTitle}>{user?.name}</ThemedText>
             <View style={{ width: 40 }} />
           </Animated.View>
@@ -249,7 +246,11 @@ export default function Profile() {
                         onPress={() => openSocialMedia("instagram", user.social.instagram)}
                         disabled={!user.social.instagram}
                       >
-                        <FontAwesome name="instagram" size={24} color={user.social.instagram ? "#E1306C" : "#9CA3AF"} />
+                        <FontAwesome
+                          name="instagram"
+                          size={24}
+                          color={user.social.instagram ? "#E1306C" : "#9CA3AF"}
+                        />
                         <ThemedText style={styles.socialText}>
                           {user.social.instagram ? `@${user.social.instagram}` : "Not connected"}
                         </ThemedText>
@@ -260,8 +261,14 @@ export default function Profile() {
                         onPress={() => openSocialMedia("facebook", user.social.facebook)}
                         disabled={!user.social.facebook}
                       >
-                        <FontAwesome name="facebook" size={24} color={user.social.facebook ? "#4267B2" : "#9CA3AF"} />
-                        <ThemedText style={styles.socialText}>{user.social.facebook || "Not connected"}</ThemedText>
+                        <FontAwesome
+                          name="facebook"
+                          size={24}
+                          color={user.social.facebook ? "#4267B2" : "#9CA3AF"}
+                        />
+                        <ThemedText style={styles.socialText}>
+                          {user.social.facebook || "Not connected"}
+                        </ThemedText>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -272,17 +279,16 @@ export default function Profile() {
                       onPress={handleUnfriend}
                       disabled={unfriending}
                     >
-                      {unfriending ? (
-                        <View style={styles.loadingContainer}>
-                          <MaterialIcons name="hourglass-top" size={20} color="white" />
-                          <ThemedText style={styles.unfriendButtonText}>Processing...</ThemedText>
-                        </View>
-                      ) : (
-                        <View style={styles.loadingContainer}>
-                          <MaterialIcons name="person-remove" size={20} color="white" />
-                          <ThemedText style={styles.unfriendButtonText}>Unfriend</ThemedText>
-                        </View>
-                      )}
+                      <View style={styles.loadingContainer}>
+                        <MaterialIcons
+                          name={unfriending ? "hourglass-top" : "person-remove"}
+                          size={20}
+                          color="white"
+                        />
+                        <ThemedText style={styles.unfriendButtonText}>
+                          {unfriending ? "Processing..." : "Unfriend"}
+                        </ThemedText>
+                      </View>
                     </TouchableOpacity>
                   </View>
                 </Animated.View>
@@ -312,12 +318,26 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
   },
+  fixedBackButton: {
+    position: "absolute",
+    top: 16,
+    left: 16,
+    zIndex: 101,
+    backgroundColor: "white",
+    borderRadius: 24,
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
   },
   headerTitle: {
     color: "white",

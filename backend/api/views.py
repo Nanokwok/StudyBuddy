@@ -11,6 +11,9 @@ import pytz
 from django.utils.timezone import now
 from django.db.models import Q
 from .utils.s3_utils import get_full_s3_url
+import boto3
+import uuid
+from botocore.exceptions import ClientError
 
 from .models import *
 from .serializers import *
@@ -96,6 +99,11 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get', 'patch'])
     def me(self, request):
         serializer = self.get_serializer(request.user)
+        if request.method == 'PATCH':
+            serializer = self.get_serializer(request.user, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
         return Response(serializer.data)
 
     @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser])
@@ -204,7 +212,15 @@ class UserCourseViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def enroll(self, request):
         user_id = request.user.id
-        course_id = request.data.get('course_id')
+        course_code = request.data.get('course_code')
+        try:
+            course = Course.objects.get(course_code=course_code)
+            course_id = course.course_id
+        except Course.DoesNotExist:
+            return Response(
+                {'detail': 'Course not found.'},
+                status=HTTP_BAD_REQUEST
+            )
         
         if UserCourse.objects.filter(user_id=user_id, course_id=course_id).exists():
             return Response(
@@ -229,7 +245,15 @@ class UserCourseViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def unenroll(self, request):
         user_id = request.user.id
-        course_id = request.data.get('course_id')
+        course_code = request.data.get('course_code')
+        try:
+            course = Course.objects.get(course_code=course_code)
+            course_id = course.course_id
+        except Course.DoesNotExist:
+            return Response(
+                {'detail': 'Course not found.'},
+                status=HTTP_BAD_REQUEST
+            )
         
         enrollment = get_object_or_404(
             UserCourse, 
@@ -397,7 +421,6 @@ class FriendshipViewSet(viewsets.ModelViewSet):
                 {'detail': str(e)},
                 status=HTTP_BAD_REQUEST
             )
-
 
 
 class SocialMediaLinkViewSet(viewsets.ModelViewSet):
