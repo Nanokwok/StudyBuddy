@@ -15,11 +15,15 @@ class SocialMediaLinkSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user registration and profile information.
+    """
     profile_picture_url = serializers.SerializerMethodField()
     social_links = SocialMediaLinkSerializer(many=True, read_only=True)
     friendship_count = serializers.SerializerMethodField()
 
     class Meta:
+        """Meta class for UserSerializer."""
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name',
                 'profile_picture_url', 'created_at', 'last_login', 'social_links',
@@ -30,26 +34,34 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
+        """Create a new user with the provided data."""
         print("Creating user with data:", validated_data)
         return User.objects.create_user(**validated_data)
 
     def get_profile_picture_url(self, obj):
+        """Get the full URL for the user's profile picture."""
         return get_full_s3_url(obj.profile_picture_url)
 
     def get_friendship_count(self, obj):
+        """Get the number of accepted friendships for the user."""
         return Friendship.objects.filter(
             (Q(requester=obj) | Q(addressee=obj)) & Q(status='accepted')
         ).count()
 
 
 class UserBasicSerializer(serializers.ModelSerializer):
+    """
+    Serializer for basic user information, used in friendship requests.
+    """
     profile_picture_url = serializers.SerializerMethodField()
 
     class Meta:
+        """Meta class for UserBasicSerializer."""
         model = User
         fields = ['id', 'username', 'first_name', 'last_name', 'profile_picture_url', 'bio']
 
     def get_profile_picture_url(self, obj):
+        """Get the full URL for the user's profile picture."""
         if not obj.profile_picture_url:
             return None
             
@@ -68,6 +80,7 @@ class CourseSerializer(serializers.ModelSerializer):
     Serializer for course information.
     """
     class Meta:
+        """Meta class for CourseSerializer."""
         model = Course
         fields = ['course_id', 'course_code', 'title', 'subject', 'description']
 
@@ -79,6 +92,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     enrolled_user_count = serializers.SerializerMethodField()
 
     class Meta:
+        """Meta class for CourseDetailSerializer."""
         model = Course
         fields = ['course_id', 'course_code', 'title', 'subject', 
                   'description', 'enrolled_user_count']
@@ -151,13 +165,18 @@ class FriendshipUpdateSerializer(serializers.ModelSerializer):
 
 
 class UserProfilePictureSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user profile picture upload.
+    """
     profile_picture_url = serializers.SerializerMethodField()
 
     class Meta:
+        """Meta class for UserProfilePictureSerializer."""
         model = User
         fields = ['profile_picture_url']
 
     def get_profile_picture_url(self, obj):
+        """Get the full URL for the user's profile picture."""
         if not obj.profile_picture_url:
             return None
             
