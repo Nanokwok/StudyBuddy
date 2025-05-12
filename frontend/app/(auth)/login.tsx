@@ -64,37 +64,28 @@ const LoginScreen = () => {
               return;
             }
           }
-
-
-          // Set auth header
           api.defaults.headers.common['Authorization'] = `Bearer ${access}`;
-
-          // Update auth context
           await login({ access, refresh, user: user || {} });
-
-          // Navigate to home
           router.replace('/(tabs)/home');
         } else {
-          // Handle the case where access or refresh is missing
+
           console.error("Incomplete data from API:", response.data);
           Alert.alert(
             'Login Error',
             'Login successful, but required data is missing. Please try again.',
           );
           setIsLoading(false);
-          return; // Stop login process
+          return;
         }
       } else {
-        // Handle server errors
         let errorMessage = 'Login failed. Invalid credentials.';
         if (response.data && response.data.detail) {
           errorMessage = response.data.detail;
         }
         Alert.alert('Login Failed', errorMessage);
-        setIsLoading(false); // Ensure loading is set to false on error
+        setIsLoading(false);
       }
     } catch (error: any) {
-      // Improved error handling
       console.error('Login error:', error);
       let errorMessage =
         'An unexpected error occurred. Please check your network connection and try again.';
