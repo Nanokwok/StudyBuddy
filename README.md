@@ -1,47 +1,95 @@
-# StudyBuddy  
-A mobile app designed to connect university students with study partners based on courses, schedules, and study preferences.
+# StudyBuddy
 
-## About  
-StudyBuddy helps students find compatible study partners, form study groups, and coordinate study sessions with ease. By matching users based on shared courses, availability, and learning styles, StudyBuddy fosters academic collaboration and community building on campus.
+A platform connecting students with similar academic interests for collaborative learning.
 
-## Features  
-- User Authentication – Sign up/login with email or Google  
-- Course Management – Select and manage enrolled courses  
-- Home Dashboard – View upcoming study sessions & friend list  
-- Friend System – Send, accept, and manage friend requests  
-- Search & Filtering – Find study partners by name, course, or subject  
-- User Profiles – View profiles and connect with classmates  
+![image](https://github.com/user-attachments/assets/526d923c-22c5-49c3-ab69-60fd0a94b647)
 
-## Tech Stack  
-- Development: Xcode (SwiftUI)  
-- Backend: Firebase Firestore (real-time database)  
+## Features
+- **User Authentication**: Secure sign-up/login
+- **Profile Management**: Customizable academic profiles
+- **Study Sessions**: Schedule and track study meetings
+- **Networking**: Connect with peers by courses and subjects
+- **Social Integration**: Link your social profiles
 
-## Limitations (Planned Improvements)  
-- Requires a large user base at each campus for best results  
-- No video conferencing (initial version)  
-- No formal student/course verification  
+## Tech Stack
+- Frontend: React Native
+- Backend: Django REST Framework
+- Database: PostgreSQL
 
-## Getting Started  
+## Setup Instructions
 
-### 1. Clone the Repository  
+### Prerequisites
+- Node.js and npm
+- Python 3.8+
+- PostgreSQL
+- React Native environment
+
+### Installation
+
+Clone repository:
 ```bash
-git clone https://github.com/Nanokwok/StudyBuddy.git
+git clone https://github.com/nanokwok/StudyBuddy.git
 ```
 
-### 2. Open in Xcode  
-- Open `StudyBuddy.xcodeproj` in Xcode.
+Navigate to project folder:
+```bash
+cd StudyBuddy
+```
 
-### 3. Set Up Firebase  
-- Go to [Firebase Console](https://console.firebase.google.com/) and create a project.  
-- Register an **iOS app** and download `GoogleService-Info.plist`.  
-- Add `GoogleService-Info.plist` to your Xcode project.
+### Backend Setup
 
-### 4. Install Dependencies  
-Using Swift Package Manager (SPM), add:  
-- `https://github.com/firebase/firebase-ios-sdk` (for Firestore, Auth)
+Create virtual environment:
+```bash
+python -m venv venv
+```
 
-### 5. Run the App  
-- Build and run the app on a simulator or real device.
+Activate virtual environment:
+```bash
+# On macOS/Linux
+source venv/bin/activate
+
+# On Windows
+venv\Scripts\activate
+```
+
+Install backend dependencies:
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+Configure environment:
+```bash
+cp .env.sample .env
+# Edit .env with your configuration
+```
+
+Start backend server:
+```bash
+python manage.py runserver
+```
+
+For phone simulation:
+```bash
+python manage.py runserver 0.0.0.0:8000
+```
+
+### Frontend Setup
+
+Navigate to frontend directory:
+```bash
+cd ../frontend
+```
+
+Install frontend dependencies:
+```bash
+npm install
+```
+
+Start the application:
+```bash
+npx expo start
+```
 
 ## License  
 This project is licensed under the [MIT License](LICENSE).
